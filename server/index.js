@@ -28,7 +28,7 @@ import { cleanUpUploads } from "./middlewares/cleanUpUploads.js";
 import questionRoutes from "./routes/Question.routes.js";
 import badgeRoutes from './routes/Badge.routes.js';
 import quizRoutes from './routes/Quiz.routes.js';
-import populateRoutes from './routes/RoutesToPopulate.js'
+// import populateRoutes from './routes/RoutesToPopulate.js'
 import postRoutes from './routes/Post.routes.js'
 const app = express();
 const PORT = process.env.PORT
