@@ -2,61 +2,39 @@ import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt"
 
-const uniqueAttribute = async function (attr, value){
-    const user = await this.constructor.findOne({[attr]:value})
-    if(user){
-        if(this.id === user.id){
-            return true
-        }
-        return false
-    }
-    return true
-}
-
-let manyValidators = [
-    {validator: validator.isEmail, message:'Correo electrónico no válido'},
-    {validator: async function(value){
-        return await uniqueAttribute.call(this,'email', value)
-    }, message: props => 'Correo electrónico ya en uso'}
-]
-
 const userSchema = new mongoose.Schema({
     userName:{
         type: String,
-        required: true,
-        unique: true,
+        required: [true, 'El nombre de usuario es requerido'],
         minLength: [2, 'Nombre de usuario no válido, la longitud debe ser al menos 2'],
         maxLength:[20, 'Nombre de usuario no válido, la longitud debe ser menor que 20'],
-        validate:{
-            validator: async function(value){
-                return await uniqueAttribute.call(this,'userName', value)
-            },
-            message: props => "El nombre de usuario ya existe"
-        }
-        //lowercase: true
+    },
+    normalizedUserName: {
+        type: String,
+        unique: true,
     },
     name:{
         type: String,
-        required: true,
+        required: [true, 'El nombre es requerido'],
         minLength: [2, 'Nombre no válido, la longitud mínima es 2 caracteres'],
         maxLength: [20, 'Nombre no válido, la longitud máxima es 20 caracteres']
     },
     lastName:{
         type: String,
-        required: true,
+        required: [true, 'Los apellidos son requeridos'],
         minLength: [2,'Campo apellidos no válido, la longitud mínima es 2 caracteres'],
         maxLength: [30, 'Campo apellidos no válido, la longitud máxima es 30 caracteres']
     },
     email:{
         type: String,
-        required: [true,"Debe insertar un correo electrónico"],
+        required: [true,'El correo electrónico es requerido'],
         unique: true,
-        validate: manyValidators
+        validate: [validator.isEmail, 'Correo electrónico no válido']
     },
     password:{
         type: String,
-        required: true,
-        validate: [validator.isStrongPassword, 'Contraseña no válida'] //pensar donde poner los requisitos: min 8 caracteres, 1 minuscula,1 mayuscula,1 numero, 1 simbolo
+        required: [true,'La contraseña es requerida'],
+        validate: [validator.isStrongPassword, 'Contraseña no válida']
     },
     profilePic:{
         public_id: {
@@ -86,10 +64,29 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: true
     },
-    badges:[{
-        type: mongoose.Types.ObjectId,
-        ref: 'Badge'
-    }]
+    bannedUntil:{
+        type: Date,
+        default: null
+    },
+    deleteOn:{
+        type: Date,
+        default: null, 
+        expires: 0
+    },
+    badges:{
+        type: [{
+            type: mongoose.Types.ObjectId,
+            ref: 'Badge'
+        }],
+        default: []
+    },
+    completedQuizzes: {
+        type: [{
+            type: mongoose.Types.ObjectId,
+            ref: 'Quiz'
+        }],
+        default: []
+    }
 }, {
     timestamps: true
 })
@@ -106,7 +103,6 @@ userSchema.methods.comparePassword = async function(password){
     const isMatch = await bcrypt.compare(password, this.password)
     return isMatch
 }
-
 
 const User = mongoose.model('User', userSchema)
 

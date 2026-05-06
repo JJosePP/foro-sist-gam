@@ -1,12 +1,7 @@
 import mongoose from "mongoose";
+import { basedSchema } from "../utils/namedEntitySchema.js";
 
-const CategorySchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    }
-})
 
-const Category = mongoose.model("Category", CategorySchema)
+const Category = mongoose.model("Category", basedSchema)
 
 export default Category;

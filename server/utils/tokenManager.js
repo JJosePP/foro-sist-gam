@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
+import {v4 as uuidv4} from 'uuid';
 
-export const generateToken = (uid) => {
+export const generateToken = (uid, roles) => {
     const expiresIn = 60 * 15;
     try {
-        const token = jwt.sign({ uid }, process.env.JWT_SECRET, {
+        const tokenId = uuidv4()
+        const token = jwt.sign({ tokenId, uid, roles }, process.env.JWT_SECRET, {
             expiresIn: expiresIn,
         });
         return { token, expiresIn };
@@ -30,10 +32,10 @@ export const generateRefreshToken = (uid, res) => {
 };
 
 export const tokenVerificationErrors = {
-    "invalid signature": "La firma del JWR no es válidad",
+    "invalid signature": "La firma del JWT no es válidad",
     "jwt expired": "JWT expirado",
     "invalid token": "Token no válido",
-    "No Bearer": "Utiliza formato Bearer",
     "jwt malformed": "JWT formato no válido",
-    "No token": "No existe el token"
+    "No token": "No existe el token",
+    "jwt must be provided": "Introduzca un token"
 }

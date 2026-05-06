@@ -3,39 +3,58 @@ import mongoose from "mongoose";
 const quizSchema = new mongoose.Schema({
     title:{
         type: String,
-        required: true,
+        required: [true, 'El título es requerido'],
         minLength: [5, 'La longitud mímina del título es 5 caracteres'],
-        maxLength: [20, 'La longitud máxima del título es 20 caracteres']
+        maxLength: [50, 'La longitud máxima del título es 50 caracteres']
     },
     description:{
         type: String,
-        maxLength:[100, 'La longitud máxima de la descripción es 100 caracteres']
+        maxLength:[1000, 'La longitud máxima de la descripción es 1000 caracteres']
     },
     difficulty:{
         type: String,
-        required: true,
+        required: [true, 'La dificultad es requerida'],
         enum: {
             values: ['Fácil', 'Intermedio', 'Difícil'],
             message: '{VALUE} no es correcto'
         }
     },
-    tags:[{
-        type: String,
-        required: true
-    }],
+    normalizedDifficulty: {
+        type: String
+    },
+    tags: {
+        type: [{
+            type: mongoose.Types.ObjectId,
+            ref: "Tag"
+        }],
+        required: [true, 'La lista de etiquetas es requerida'],
+        validate: [array => array.length > 0, 'Debe tener al menos una etiqueta']
+    },
     numQuestions:{
         type: Number,
-        min:[10,'El número minimo de preguntas es 10']
+        min:[10,'El número minimo de preguntas es 10'],
+        validate: {
+            validator: Number.isInteger,
+            message: '{VALUE} debe ser un valor entero'
+        }
     },
     badge:{
         type: mongoose.Types.ObjectId,
         ref: 'Badge',
-        require: true
+        require: [true, 'La insignia es requerida']
+    },
+    winners: {
+        type: [{
+            type: mongoose.Types.ObjectId,
+            ref: 'User'
+        }],
+        default: []
     }
 }, {
     timestamps: true
 })
 
+quizSchema.index({createdAt: -1, _id: 1});
 const Quiz = mongoose.model('Quiz', quizSchema)
 
 export default Quiz;

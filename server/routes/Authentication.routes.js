@@ -1,25 +1,20 @@
 import express from "express";
-import {AuthenticationController} from "../controllers/index.js";
-
+import AuthController from "../controllers/Authenticaction.controllers.js";
 import { requireToken } from "../middlewares/requireToken.js";
 import { requireRefreshToken } from "../middlewares/requireRefreshToken.js";
+import { upload } from "../middlewares/multer.js";
+import { tokenIsInvalid } from '../middlewares/tokenIsInvalid.js';
+import { passwordValidator, userValidator, loginValidator} from "../middlewares/User.validators.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
+import { imageValidator } from "../middlewares/commonValidators.js";
+
 const router = express.Router();
 
-//...
-router.route("/").get((req, res) => {
-    res.send("hi this is authentication");
-});
-router.get("/2", (req, res) => {
-    res.send("hi this is authentication 2");
-});
+router.post("/register", upload.array('image'),userValidator, passwordValidator, validateRequest, imageValidator(false), AuthController.register);
+router.post("/login", upload.none(), loginValidator, validateRequest,AuthController.login);
 
-router.post("/register", AuthenticationController.register);
-router.post("/login", AuthenticationController.login);
-
-//ruta de ejemplo. Usar requireToken para todas las rutas en las que se necesite estar logeado
-router.get("/protected",requireToken,AuthenticationController.infoUser);
-
-router.get("/refresh",requireRefreshToken, AuthenticationController.refreshToken)
-router.get("/logout", AuthenticationController.logout)
+// despues del requireRefrestoken poner tb el middleware para ver si está ban
+router.get("/refresh",requireRefreshToken, AuthController.refreshToken) 
+router.post("/logout", requireToken,tokenIsInvalid, AuthController.logout)
 
 export default router;

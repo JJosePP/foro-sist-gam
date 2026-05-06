@@ -1,17 +1,42 @@
 import express from "express";
-import routes from "./routes/index.js";
 import connectDB from "./config/db.js";
 import morgan from "morgan";
 import quizModel from "./models/Quiz.model.js"
 import userModel from './models/User.model.js'
+import badgeModel from './models/Badge.model.js'
+import invalidTokenModel from "./models/invalidTokens.model.js";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors"
-
+import history from 'connect-history-api-fallback'
+import path from 'path'
+import { fileURLToPath } from 'url';
+import { upload } from "./middlewares/multer.js";
+import { uploadImage } from "./utils/cloudinary.js";
+import gameRoutes from "./routes/Game.routes.js";
+import authRoutes from "./routes/Authentication.routes.js"
+import userRoutes from "./routes/User.routes.js"
+import platformRoutes from './routes/Platform.routes.js'
+import genreRoutes from './routes/Genre.routes.js'
+import categoriesRoutes from './routes/Category.routes.js'
+import threadRoutes from "./routes/Thread.routes.js"
+import replyRoutes from "./routes/Reply.routes.js"
+import tagRoutes from "./routes/Tag.routes.js"
+import reviewRoutes from "./routes/Review.routes.js"
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { cleanUpUploads } from "./middlewares/cleanUpUploads.js";
+import questionRoutes from "./routes/Question.routes.js";
+import badgeRoutes from './routes/Badge.routes.js';
+import quizRoutes from './routes/Quiz.routes.js';
+import populateRoutes from './routes/RoutesToPopulate.js'
+import postRoutes from './routes/Post.routes.js'
 const app = express();
 const PORT = process.env.PORT
 // lista de dominios que pueden acceder a la api
 const whiteList = [process.env.ORIGIN1]
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
 // middlewares
 app.use(cors({
     origin: function(origin, callback){
@@ -24,78 +49,35 @@ app.use(cors({
 }));
 app.use(morgan('dev'))
 app.use(express.urlencoded({extended:false}))
-app.use(express.json())
+app.use(express.json({
+  limit: '50mb'
+}));
 app.use(cookieParser())
 
 await connectDB();
 
-app.get('/', (req,res) =>{
-    res.send('Hello world')
-})
-
 // routes
-app.use("/api/v1",routes.Authentication)
-app.use("/api/v1/games",routes.Games)
+app.use("/api/v1",authRoutes)
+app.use('/api/v1/platforms', platformRoutes)
+app.use('/api/v1/categories', categoriesRoutes)
+app.use('/api/v1/genres', genreRoutes)
+app.use("/api/v1/games",gameRoutes)
+app.use("/api/v1/users", userRoutes)
+app.use("/api/v1/threads", threadRoutes)
+app.use("/api/v1/replies", replyRoutes)
+app.use('/api/v1/tags', tagRoutes)
+app.use('/api/v1/reviews', reviewRoutes)
+app.use('/api/v1/questions', questionRoutes)
+app.use('/api/v1/badges', badgeRoutes)
+app.use('/api/v1/quizzes', quizRoutes)
+app.use('/api/v1/posts', postRoutes)
+// app.use('/api/v1', populateRoutes)
 
-app.get('/badge',async (req,res)=>{
-    const userSchema = new mongoose.Schema({
-        name: String,
-        friends: [{ type: mongoose.Types.ObjectId, ref: 'Usuario' }]
-    });
+app.use(cleanUpUploads)
+app.use(errorHandler);
 
-    const usuario = mongoose.model("Usuario", userSchema)
-    // const id1 = new mongoose.Types.ObjectId()
-    // const id2 = new mongoose.Types.ObjectId()
-    // const id3 = new mongoose.Types.ObjectId()
-    // const id4 = new mongoose.Types.ObjectId()
-    // const id5 = new mongoose.Types.ObjectId()
-    // const u1 = new usuario({
-    //     _id: id1,
-    //     name: 'Val',
-    //     friends: [id2,id3]
-    // })
-    // const u2 = new usuario({
-    //     _id: id2,
-    //     name: 'Pedro',
-    //     friends: [id1,id4]
-    // })
-    // const u3 = new usuario({
-    //     _id: id3,
-    //     name: 'Maria',
-    //     friends: [id1,id5]
-    // })
-    // const u4 = new usuario({
-    //     _id: id4,
-    //     name: 'Francisco',
-    //     friends: [id2,id5]
-    // })
-    // const u5 = new usuario({
-    //     _id: id5,
-    //     name: 'Ana',
-    //     friends: [id3,id4]
-    // })
-    // await u1.save();
-    // await u2.save();
-    // await u3.save();
-    // await u4.save();
-    // await u5.save();
-
-    const quiz = await quizModel.findById('660bf6b02af24352a95d3e37')
-    const a = await quiz.populate({path: 'badge', populate:{path: 'users'}})
-    console.log(quiz.badge)
-
-    const user1 = await userModel.findById('660bf6002af24352a95d3e36')
-    // await user1.populate('badges')
-    console.log(user1)
-    // console.log(a)
-    // const a = await quiz.populate({path: 'badge', populate:{path: 'users'}})
-    // console.log(a)
-
-    // const val = await usuario.findOne({ name: 'Val' })
-    // await val.populate({path: 'friends', populate: { path: 'friends' }});
-    // console.log(val.friends[0])
-    res.send('hola')
-})
+app.use(history());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, ()=>{
     console.log(`Example app listening on port ${PORT}`)

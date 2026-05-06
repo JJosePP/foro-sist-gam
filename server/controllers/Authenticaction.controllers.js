@@ -1,85 +1,62 @@
-import AuthenticationService from "../services/index.js";
-import jwt from "jsonwebtoken";
+import authenticationService from "../services/Authentication.service.js"
 import { generateRefreshToken, generateToken } from "../utils/tokenManager.js";
+import userModel from "../models/User.model.js";
 
-export class AuthenticationController {
-    static register = async (req, res) => {
+const register = async (req, res, next) => {
+
+    try {
+        const user = await authenticationService.register(req.body, req.files[0]);
+        const {token, expiresIn} = generateToken(user.id, user.roles);
+        generateRefreshToken(user.id, res);
+
+        return res.status(201).json({message:"Usuario registrado correctamente", token, expiresIn});
+    } catch (error) {
+        next(error)
+    }
+}
+
+const login = async (req, res, next) => {
+    try {
+        const user = await authenticationService.login(req.body);
+        const username = user.userName
+        //Generar token JWT
+        const { token, expiresIn } = generateToken(user.id, user.roles);
+        generateRefreshToken(user.id, res);
+
+        return res.status(200).json({ message:"Sesión iniciada correctamente",username,token, expiresIn });
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+const refreshToken = async (req, res, next) => {
         try {
-            const user = await AuthenticationService.register(req.body);
-            const { token, expiresIn } = generateToken(user.id);
-            generateRefreshToken(user.id, res);
-            return res.status(201).json({message:"Usuario registrado correctamente",token, expiresIn});
-        } catch (error) {
-            console.log(error.name);
-            if (error.name === "ValidationError") {
-                const err = {};
-                for (let e in error.errors) {
-                    err[e] = { message: error.errors[e].message };
-                }
-                console.log(err);
-                //console.log(Object.entries(error.errors))
-                // const err = Object.entries(error.errors).reduce((acc,[key,value]) => {
-                //     acc[key] = {message: value.message}
-                //     return acc;
-                // },{})
-                return res.status(400).json({ errors: err });
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: "Error interno del servidor" });
-            }
-        }
-    };
-
-    static login = async (req, res) => {
-        try {
-            const user = await AuthenticationService.login(req.body);
-
-            //Generar token JWT
-            const { token, expiresIn } = generateToken(user.id);
-            generateRefreshToken(user.id, res);
-
-            return res.json({ message:"Sesión iniciada correctamente",token, expiresIn });
-        } catch (error) {
-            console.log(error);
-            if (
-                error.name === "existError" ||
-                error.name === "invalidPassword"
-            ) {
-                return res.status(error.status).json({ error: error.message });
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: "Error interno del servidor" });
-            }
-        }
-    };
-
-    static infoUser = async (req, res) => {
-        try {
-            console.log(req.uid);
-            const user = await AuthenticationService.infoUser(req.uid);
-            return res.json({ user });
-        } catch (error) {
-            return res.status(500).json({ error: "error del servidor" });
-        }
-    };
-
-    static refreshToken = (req, res) => {
-        try {
-            const { token, expiresIn } = generateToken(req.uid);
+            await authenticationService.refreshToken(req.uid)
+            const { token, expiresIn } = generateToken(req.uid, req.roles);
 
             return res.json({ token, expiresIn });
         } catch (error) {
-            console.log(error);
-            return res
-                .status(500)
-                .json({ error: "Error interno del servidor" });
+            next(error)
         }
-    };
+};
 
-    static logout = (req, res) => {
+const logout = async (req, res, next) => {
+    try {
         res.clearCookie("refreshToken");
-        res.json({ ok: true });
-    };
-}
+
+        const token = await authenticationService.logout(req.tokenId)
+
+        return res.status(201).json({token, message: "Sesión cerrada correctamente" });
+        
+    } catch (error) {
+        next(error)
+    }
+};
+
+export default {
+    register,
+    login,
+    refreshToken,
+    logout
+};
