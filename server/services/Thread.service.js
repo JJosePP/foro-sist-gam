@@ -197,10 +197,20 @@ const changeThreadStatus = async (threadId, status) => {
     await thread.validate()
     await thread.save()
 }
+
+const getNewestThreads = async () => {
+    return await threadModel.find()
+        .populate({path: "user", select: "id userName"})
+        .sort({createdAt: -1, _id: 1})
+        .limit(5)
+        .select("id title user numReplies createdAt");
+    
+}
 export default {
     createThread,
     getThreads,
     editThread,
     getThread,
-    changeThreadStatus
+    changeThreadStatus,
+    getNewestThreads
 }

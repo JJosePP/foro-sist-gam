@@ -118,10 +118,20 @@ const changeThreadStatus = async (req,res,next) => {
     }
 }
 
+const getNewestThreads = async (req,res,next) => {
+    try {
+        let result = await threadService.getNewestThreads();
+
+        return res.status(200).json({result})
+    } catch (error) {
+        next(error)
+    }
+}
 export default {
     createThread,
     getThreads,
     editThread,
     getThread,
-    changeThreadStatus
+    changeThreadStatus,
+    getNewestThreads
 }

@@ -15,6 +15,7 @@ import { idValidator } from "../middlewares/commonValidators.js";
 const router = express.Router();
 
 router.get('/', threadCategoryValidator, validateRequest, threadControllers.getThreads)
+router.get('/newestThreads', threadControllers.getNewestThreads)
 router.get('/:threadId',optionalAuth, idValidator("threadId"), validateRequest, threadControllers.getThread)
 router.post('/', requireToken,tokenIsInvalid,userIsBanned,upload.none(),completeBodyThreadValidator, validateRequest, threadControllers.createThread);
 router.put('/:threadId',requireToken, tokenIsInvalid, userIsBanned, upload.none(), idValidator("threadId"), partialBodyThreadValidator,validateRequest, threadControllers.editThread)

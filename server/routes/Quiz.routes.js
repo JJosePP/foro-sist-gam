@@ -13,6 +13,7 @@ import quizSessionControllers from '../controllers/QuizSession.controllers.js';
 const router = express.Router();
 
 router.get('/', quizControllers.getQuizzes);
+router.get('/totalQuizzes', requireToken, tokenIsInvalid, userIsBanned, upload.none(), quizControllers.getNumQuizzes)
 router.post('/', requireToken, tokenIsInvalid, requireAdminStatus, upload.none(), quizValidator, validateRequest, quizControllers.createQuiz);
 router.put('/:quizId', requireToken, tokenIsInvalid, requireAdminStatus, upload.none(), idValidator("quizId"), partialQuizValidator, validateRequest, quizControllers.editQuiz);
 router.delete('/:quizId', requireToken, tokenIsInvalid, requireAdminStatus, idValidator("quizId"), validateRequest, quizControllers.deleteQuiz)

@@ -17,7 +17,7 @@ const createGame = async (body, files) => {
                 .replaceAll(regex_to_remove_white_spaces,'-').toLowerCase();
         const existingGame = await gameModel.exists({normalizedName:normalizedName })
         let e = await gameModel.exists({normalizedName:normalizedName }).explain("executionStats")
-        if(existingGame) {                  
+        if(existingGame) {
             throw apiErrors.existingGame;
         }
 
@@ -35,19 +35,19 @@ const createGame = async (body, files) => {
         game.mainImage = {
             public_id: result.public_id,
             secure_url: result.secure_url
-        };      
+        };
         uploadedImages.push(result.public_id);
 
-        await game.validate();   
+        await game.validate();
 
-        if(files.screenshots){   
+        if(files.screenshots){
             for(let f of files.screenshots){
                 let result = await uploadImage(f.path, 'games', game.id, "screenshot")
                 game.screenshots.push({
                     public_id: result.public_id,
                     secure_url: result.secure_url
                 })
-                uploadedImages.push(result.public_id)       
+                uploadedImages.push(result.public_id)
             }
         }
 
@@ -188,7 +188,7 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
     let result;
     let totalItems;
     let hasNextPage = false;
-    
+
     const filter = {}
 
     if(genres) {
@@ -199,7 +199,7 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
         const genreIds = genreDocs.map(g=>g._id);
         filter.genres = {$all: genreIds};
     }
-    
+
     if (platforms){
         const platformDocs = await platformModel.find(
             {normalizedName: {$in: platforms}},
@@ -272,19 +272,20 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
         }else{
             totalItems = total[0].total
         }
-    }else{     
+    }else{
         [result, totalItems] = await Promise.all([
             gameModel.find(filter)
                 .populate('genres','name')
-                .populate('platforms','name')
-                .select('-mainImage.public_id -screenshots.public_id -screenshots._id -normalizedName')
+                // .populate('platforms','name')
+                // .select('-mainImage.public_id -screenshots.public_id -screenshots._id -normalizedName')
+                .select('-mainImage.public_id -screenshots -normalizedName -platforms -developmentCompany -releaseDate -description -updatedAt')
                 .sort(sort)
                 .skip((page-1) * resultsPerPage)
                 .limit(resultsPerPage + 1),
             gameModel.countDocuments(filter)
         ])
         result = result.map(game => {
-            return game.toObject();   
+            return game.toObject();
         });
     }
     if (result.length > resultsPerPage){
@@ -294,9 +295,9 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
 
     return {
         data: result,
-        currentPage: page, 
+        currentPage: page,
         hasNextPage,
-        totalPages: Math.ceil(totalItems/resultsPerPage), 
+        totalPages: Math.ceil(totalItems/resultsPerPage),
         totalItems
     }
 
@@ -312,7 +313,7 @@ const getGame = async (gameId) => {
         throw apiErrors.gameNotFound
     }
     let formatedGame = {
-        ...game.toObject(), 
+        ...game.toObject(),
         releaseDate:game.releaseDate.toLocaleDateString(undefined,{year:"numeric",month:"long", day:"numeric"})
     }
     for(let score in formatedGame.rating){

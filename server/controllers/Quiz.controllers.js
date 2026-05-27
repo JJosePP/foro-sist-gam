@@ -36,7 +36,7 @@ const getQuizzes = async (req,res,next) => {
 
 const editQuiz = async (req,res,next) => {
     try {
-         const data = {
+        const data = {
             title: req.body.title,
             description: req.body.description,
             difficulty: req.body.difficulty,
@@ -58,9 +58,20 @@ const deleteQuiz = async(req,res,next) => {
         next(error)
     }
 }
+
+const getNumQuizzes = async (req,res,next) => {
+    try {
+        let numQuizzes = await quizService.getNumQuizzes();
+        return res.status(200).json({totalQuizzes: numQuizzes})
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createQuiz,
     getQuizzes,
     editQuiz,
-    deleteQuiz
+    deleteQuiz,
+    getNumQuizzes
 }

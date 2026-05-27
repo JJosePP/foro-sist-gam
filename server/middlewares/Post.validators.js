@@ -1,4 +1,4 @@
-import { param, body } from "express-validator";
+import { param, body, query } from "express-validator";
 
 export const voteValidator = [
     param("vote")
@@ -18,4 +18,10 @@ export const moderateValidator = [
         .notEmpty().withMessage("La razón de la moderación es requerida")
         .bail()
         .isIn(['Ofensivo', 'Spam', 'Fuera de tema', 'Lenguaje inapropiado']).withMessage("Los valores permitidos son: 'Ofensivo', 'Spam', 'Fuera de tema' y 'Lenguaje inapropiado'")
+]
+export const postUserValidator = [
+    query("user")
+        .trim()
+        .notEmpty().withMessage("El identificador del usuario es obligatorio")
+        .isMongoId().withMessage("El identificador proporcionado no tiene un formato válido (cadena hexadecimal de 24 caracteres)")
 ]

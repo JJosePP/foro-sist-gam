@@ -36,7 +36,7 @@ const threadSchema = new mongoose.Schema(
             type: Number,
             validate: numberValidators,
             default: 0
-    },
+        },
     },
     { discriminatorKey: "kind" }
 );

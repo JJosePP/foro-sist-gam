@@ -98,6 +98,7 @@ const login = async (body) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+        console.log(isMatch)
         throw apiErrors.wrongPassword
     }
 
@@ -126,6 +127,7 @@ const refreshToken = async (uid) => {
         bannedUser.details = bannedUser.details.concat(" ", banDate)
         throw bannedUser
     }
+    return user
 }
 
 export default { register, login, logout, refreshToken };

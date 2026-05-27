@@ -8,8 +8,8 @@ import { apiErrors } from "../utils/apiErrors.js";
 const getUser = async (req, res, next) => {
     try {
         const userId = req.params.userId
-        let result = await userService.getUser(userId, req.uid)
-        return res.json({ result });
+        let user = await userService.getUser(userId, req.uid)
+        return res.json({ user });
     } catch (error) {
         next(error)
     }

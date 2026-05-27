@@ -53,7 +53,31 @@ const moderatePost = async (postId, uid, reason) => {
     await post.save()
 }
 
+const numPostByUserAndLatestPost = async (user) => {
+    let [result, totalPosts] = await Promise.all([
+        postModel.find({user: user})
+            .sort({createdAt: -1})
+            .limit(3)
+            .select("-user -numReplies -negativeVotesList -positiveVotesList -content -positiveVotes -negativeVotes -isModerated -status -category -updatedAt -createdAt -rating"),
+        postModel.countDocuments({user: user})
+    ]);
+
+    for (let post of result){
+        if(post.kind === "Review"){
+            await post.populate({path: "game", select: "_id name"})
+        }else if(post.kind === "Reply"){
+            await post.populate({path: "thread", select: "_id title"})
+        }
+    }
+
+    return {
+        recentPosts: result,
+        totalPosts: totalPosts
+    }
+}
+
 export default {
     votePost,
-    moderatePost
+    moderatePost,
+    numPostByUserAndLatestPost
 }

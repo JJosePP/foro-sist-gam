@@ -24,14 +24,18 @@
 
     const handleSubmit = async () => {
         try {
+            console.log('AQUI LLEGA')
             const data = await userStore.access(userName.value, password.value)
+            console.log("HOLA")
             router.push('/')
             userName.value = "";
             password.value = "";
             toastStore.alert(data?.message)
-            
+            console.log('aaaaaaaaaaaaaaaaaaaaaaaa')
+            console.log(data)
         } catch (error) {
-            toastStore.alert(error.error, 'error')
+            console.log("JAJAJAJJ ", error)
+            toastStore.alert(error.details, 'error')
         }
     }
 </script>

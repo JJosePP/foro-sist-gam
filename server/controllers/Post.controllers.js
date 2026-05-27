@@ -26,7 +26,20 @@ const moderatePost = async (req,res,next) => {
     }
 }
 
+const numPostByUserAndLatestPost = async (req,res,next) => {
+    try {
+        let user = req.query.user;
+        console.log(user)
+        let result = await postService.numPostByUserAndLatestPost(user);
+
+        return res.status(200).json({result})
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     votePost,
-    moderatePost
+    moderatePost,
+    numPostByUserAndLatestPost
 }

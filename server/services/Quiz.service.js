@@ -80,11 +80,16 @@ const addUserToWinners = async (quizId, userId) => {
     })
 }
 
+const getNumQuizzes = async () => {
+    return await quizModel.countDocuments()
+}
+
 export default {
     createQuiz,
     getQuizzes,
     editQuiz,
     deleteQuiz,
     getQuiz,
-    addUserToWinners
+    addUserToWinners,
+    getNumQuizzes
 }

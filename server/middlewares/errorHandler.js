@@ -1,5 +1,6 @@
 
 export const errorHandler = (err, req, res, next) => {
+    console.log(err)
     if(err.validation){
         return res.status(err.status).json({
             status: err.status,

@@ -1,0 +1,5 @@
+
+
+<template>
+    INFO JUEGO
+</template>
