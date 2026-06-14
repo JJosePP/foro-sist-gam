@@ -1,12 +1,12 @@
 <script setup>
-    import Categories from './CategoryListView.vue'
-    import Genres from './GenresListView.vue'
-    import Platforms from './PlatformListView.vue';
-    import Tags from './TagListView.vue';
-    import Questions from './QuestionListView.vue';
-    import Quizzes from './QuizListView.vue';
-    import Users from './UserListView.vue'
-    import Games from './GameListView.vue'
+    import Categories from './categoryListView.vue'
+    import Genres from './genresListView.vue'
+    import Platforms from './platformListView.vue';
+    import Tags from './tagListView.vue';
+    import Questions from './questionListView.vue';
+    import Quizzes from './quizListView.vue';
+    import Users from './userListView.vue'
+    import Games from './gameListView.vue'
     import { onMounted, ref } from 'vue';
     import { useUserStore } from '@/stores/userStore.js';
     import {useToastStore} from '../stores/toastStore.js'

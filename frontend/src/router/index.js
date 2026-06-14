@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import HomeView from "../views/homeView.vue";
 import { useUserStore } from "../stores/userStore.js";
 import { useToastStore } from "../stores/toastStore.js";
-import profileView from "../views/ProfileView.vue";
+import profileView from "../views/profileView.vue";
 import editProfileView from "../views/editProfileView.vue";
-import gamesView from "../views/GamesView.vue";
-import gameInfoView from "../views/GameInfoView.vue"
-import forumView from "../views/CategoriesView.vue"
-import threadsView from "../views/ThreadsView.vue"
-import threadView from "../views/ThreadView.vue"
-import quizzesView from "../views/QuizzesView.vue"
-import quizView from "../views/QuizView.vue"
-import adminView from "@/views/AdminView.vue";
+import gamesView from "../views/gamesView.vue";
+import gameInfoView from "../views/gameInfoView.vue"
+import forumView from "../views/categoriesView.vue"
+import threadsView from "../views/threadsView.vue"
+import threadView from "../views/threadView.vue"
+import quizzesView from "../views/quizzesView.vue"
+import quizView from "../views/quizView.vue"
+import adminView from "@/views/adminView.vue";
 
 const routes = [
     {
@@ -24,12 +24,12 @@ const routes = [
             },
             {
                 path: "login",
-                component: () => import("../views/LoginView.vue"),
+                component: () => import("../views/loginView.vue"),
                 name: "Login"
             },
             {
                 path: "register",
-                component: () => import("../views/RegisterView.vue"),
+                component: () => import("../views/registerView.vue"),
             },
             {
                 path: "logout",
@@ -105,12 +105,12 @@ const routes = [
             {
                 path:'/:pathName(.*)',
                 name: 'NotFound',
-                component: () => import('../views/NotFoundView.vue')
+                component: () => import('../views/notFoundView.vue')
             },
             {
                 path:'/notFound',
                 name: '404',
-                component: () => import('../views/NotFoundView.vue')
+                component: () => import('../views/notFoundView.vue')
             }
         ],
     },
