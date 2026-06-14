@@ -3,8 +3,9 @@ import { useUserStore} from "../stores/userStore.js";
 // import router from "@/router/index.js";
 // const controller = new AbortController()
 
+console.log(import.meta.env.MODE)
 const api = axios.create({
-    baseURL: "http://localhost:3000/api/v1",
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
 })
 
