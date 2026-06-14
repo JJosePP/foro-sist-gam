@@ -26,4 +26,24 @@ onMounted(async()=>{
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+  .scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 10px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+      border-radius: 100vh;
+      background: #0a0a0c;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+      background: #16161e;
+      border-radius: 100vh;
+      border: 1px solid rgb(0 212 255 / 0.3);
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #00d4ff
+  } 
+</style>

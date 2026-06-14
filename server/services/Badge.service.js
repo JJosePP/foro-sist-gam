@@ -4,141 +4,142 @@ import { deleteImage, uploadImage } from '../utils/cloudinary.js';
 import { normalizeName } from '../utils/namedEntitySchema.js';
 import fs from 'fs-extra';
 
-const removeUserFromBadges = async (userId) => {
-    await badgeModel.updateMany(
-        {users: userId},
-        {$pull:{users: userId}}
-    )
-}
+//Borrar
+// const removeUserFromBadges = async (userId) => {
+//     await badgeModel.updateMany(
+//         {users: userId},
+//         {$pull:{users: userId}}
+//     )
+// }
+//Borrar
+// const insertUserToBadges = async (badgeIds, userId) => {
+//     await badgeModel.updateMany(
+//         {_id: {$in: badgeIds}},
+//         {$addToSet: {users: userId}}
+//     )
+// }
+//Borrar
+// const insertUserToBadge = async (badgeId, userId) => {
+//     await badgeModel.findByIdAndUpdate(badgeId, {
+//         $addToSet: { users: userId}
+//     })
+// }
 
-const insertUserToBadges = async (badgeIds, userId) => {
-    await badgeModel.updateMany(
-        {_id: {$in: badgeIds}},
-        {$addToSet: {users: userId}}
-    )
-}
+// const asociateBadgeToQuiz = async(badgeId, quizId) => {
+//     await badgeModel.findByIdAndUpdate(badgeId,{quiz: quizId}, {runValidators: true});
+// }
 
-const insertUserToBadge = async (badgeId, userId) => {
-    await badgeModel.findByIdAndUpdate(badgeId, {
-        $addToSet: { users: userId}
-    })
-}
+// const getBadges = async (page) => {
+//     let hasNextPage = false;
+//     let resultsPerPage = 10;
 
-const asociateBadgeToQuiz = async(badgeId, quizId) => {
-    await badgeModel.findByIdAndUpdate(badgeId,{quiz: quizId}, {runValidators: true});
-}
+//     let [result, totalItems] = await Promise.all([
+//         badgeModel.find()
+//             .select("-users")
+//             .sort({name: 1, _id: 1})
+//             .skip((page - 1) * resultsPerPage)
+//             .limit(resultsPerPage + 1),
+//         badgeModel.countDocuments()
+//     ])
 
-const getBadges = async (page) => {
-    let hasNextPage = false;
-    let resultsPerPage = 10;
+//     if(result.length > resultsPerPage){
+//         hasNextPage = true
+//         result.pop()
+//     }
 
-    let [result, totalItems] = await Promise.all([
-        badgeModel.find()
-            .select("-users")
-            .sort({name: 1, _id: 1})
-            .skip((page - 1) * resultsPerPage)
-            .limit(resultsPerPage + 1),
-        badgeModel.countDocuments()
-    ])
+//     return {
+//         data: result,
+//         currentPage: page,
+//         hasNextPage,
+//         totalPages: Math.ceil(totalItems/resultsPerPage),
+//         totalItems: totalItems
+//     }
+// }
 
-    if(result.length > resultsPerPage){
-        hasNextPage = true
-        result.pop()
-    }
+// const createBadge = async(body, file) => {
+//     let normalizedName = normalizeName(body.name)
+//     console.log(normalizedName)
+//     let existingBadge = await badgeModel.exists({normalizedName: normalizedName});
+//     console.log(existingBadge)
+//     if(existingBadge){
+//         throw apiErrors.existingBadge;
+//     }
+//     let badge = new badgeModel({
+//         name: body.name.replace(/\s* \s*/g,' '),
+//         normalizedName: normalizedName
+//     })
+//     console.log(badge)
+//     let result = await uploadImage(file.path, 'badges', null, 'image');
+//     badge.image = {
+//         public_id: result.public_id,
+//         secure_url: result.secure_url
+//     }
+//     await fs.unlink(file.path);
 
-    return {
-        data: result,
-        currentPage: page,
-        hasNextPage,
-        totalPages: Math.ceil(totalItems/resultsPerPage),
-        totalItems: totalItems
-    }
-}
+//     await badge.save()
+// }
 
-const createBadge = async(body, file) => {
-    let normalizedName = normalizeName(body.name)
-    console.log(normalizedName)
-    let existingBadge = await badgeModel.exists({normalizedName: normalizedName});
-    console.log(existingBadge)
-    if(existingBadge){
-        throw apiErrors.existingBadge;
-    }
-    let badge = new badgeModel({
-        name: body.name.replace(/\s* \s*/g,' '),
-        normalizedName: normalizedName
-    })
-    console.log(badge)
-    let result = await uploadImage(file.path, 'badges', null, 'image');
-    badge.image = {
-        public_id: result.public_id,
-        secure_url: result.secure_url
-    }
-    await fs.unlink(file.path);
+// const editBadge = async (badgeId, body, file) => {
+//     let uploadedImage = null;
+//     try {
+//         let badge = await badgeModel.findById(badgeId);
+//         if(!badge){
+//             throw apiErrors.badgeNotFound;
+//         }
+//         badge.name = body.name.replace(/\s* \s*/g,' ');
+//         badge.normalizedName = normalizeName(body.name);
 
-    await badge.save()
-}
+//         if(file){
+//             const result = await uploadImage(file.path, 'badges', null, 'image');
+//             uploadedImage = result.public_id;
+//             await deleteImage(badge.image.public_id);
+//             badge.image = {
+//                 public_id: result.public_id,
+//                 secure_url: result.secure_url
+//             }
+//             await fs.unlink(file.path)
+//         }
 
-const editBadge = async (badgeId, body, file) => {
-    let uploadedImage = null;
-    try {
-        let badge = await badgeModel.findById(badgeId);
-        if(!badge){
-            throw apiErrors.badgeNotFound;
-        }
-        badge.name = body.name.replace(/\s* \s*/g,' ');
-        badge.normalizedName = normalizeName(body.name);
+//         return await badge.save()
+//     } catch (error) {
+//         if(uploadedImage){
+//             await deleteImage(uploadedImage)
+//         }
+//         throw error
+//     }
+// }
 
-        if(file){
-            const result = await uploadImage(file.path, 'badges', null, 'image');
-            uploadedImage = result.public_id;
-            await deleteImage(badge.image.public_id);
-            badge.image = {
-                public_id: result.public_id,
-                secure_url: result.secure_url
-            }
-            await fs.unlink(file.path)
-        }
+// const deleteBadge = async (badgeId, quizId) => {
+//     let badge = await badgeModel.findById(badgeId);
+//     if(!badge){
+//         throw apiErrors.badgeNotFound;
+//     }
 
-        return await badge.save()
-    } catch (error) {
-        if(uploadedImage){
-            await deleteImage(uploadedImage)
-        }
-        throw error
-    }
-}
+//     if(badge.quiz && !badge.quiz?.equals(quizId)){
+//         throw apiErrors.deletingBadge
+//     }
+//     await badge.deleteOne();
+//     await deleteImage(badge.image.public_id)
+// }
 
-const deleteBadge = async (badgeId, quizId) => {
-    let badge = await badgeModel.findById(badgeId);
-    if(!badge){
-        throw apiErrors.badgeNotFound;
-    }
+// const badgebelongsToQuiz = async (badgeId) => {
+//     let res = false;
+//     let badge = await badgeModel.findById(badgeId);
+//     if(badge?.quiz){
+//         res = true
+//     }
 
-    if(badge.quiz && !badge.quiz?.equals(quizId)){
-        throw apiErrors.deletingBadge
-    }
-    await badge.deleteOne();
-    await deleteImage(badge.image.public_id)
-}
-
-const badgebelongsToQuiz = async (badgeId) => {
-    let res = false;
-    let badge = await badgeModel.findById(badgeId);
-    if(badge?.quiz){
-        res = true
-    }
-
-    return res;
-}
+//     return res;
+// }
 
 export default {
-    removeUserFromBadges,
-    insertUserToBadges,
-    insertUserToBadge,
-    asociateBadgeToQuiz,
-    getBadges,
-    createBadge,
-    editBadge,
-    deleteBadge,
-    badgebelongsToQuiz
+    // removeUserFromBadges,
+    // insertUserToBadges,
+    // insertUserToBadge,
+    // asociateBadgeToQuiz,
+    // getBadges,
+    // createBadge,
+    // editBadge,
+    // deleteBadge,
+    // badgebelongsToQuiz
 }

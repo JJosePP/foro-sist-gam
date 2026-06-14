@@ -12,7 +12,9 @@ const getTags = async (req,res,next) => {
 const createTag = async (req,res,next) => {
     try {
         const tag = await tagService.createTag(req.body)
-        return res.status(200).json({tag})
+        return res.status(200).json({
+            msg: "Etiqueta creada éxito", 
+            createdTag: tag})
     } catch (error) {
         next(error)
     }

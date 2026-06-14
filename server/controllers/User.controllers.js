@@ -36,8 +36,10 @@ const banUser = async (req,res,next) => {
         }
 
         let result = await userService.banUser(userId, banDate)
-
-        return res.status(200).json({message: `Usuario ${result.userName} vetado con éxito`})
+        return res.status(200).json({
+            message: `Usuario ${result.userName} vetado con éxito`,
+            bannedUser: result
+        })
     } catch (error) {
         next(error)
     }
@@ -48,7 +50,10 @@ const unBanUser = async (req,res,next) => {
         const userId = req.params.userId
         
         let result = await userService.unBanUser(userId)
-        return res.status(200).json({message: `Prohibición de ${result.userName} levantada con éxito`})
+        return res.status(200).json({
+            message: `Prohibición de ${result.userName} levantada con éxito`,
+            unbannedUser: result    
+        })
     } catch (error) {
         next(error)
     }
@@ -81,11 +86,30 @@ const changePassword = async (req,res,next) => {
     }
 }
 
+const getCompletedQuizzes = async (req,res,next) => {
+    try {
+        let completedQuizzes = await userService.getCompletedQuizzes(req.uid)
+        return res.status(200).json({completedQuizzes})
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getUsers = async (req,res,next) => {
+    try {
+        let users = await userService.getUsers();
+        return res.status(200).json({users})
+    } catch (error) {
+        next(error)
+    }
+}
 export default {
     getUser,
     editProfile,
     banUser,
     unBanUser,
     deleteUser,
-    changePassword
+    changePassword,
+    getCompletedQuizzes,
+    getUsers
 }

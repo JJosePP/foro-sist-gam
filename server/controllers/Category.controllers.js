@@ -12,9 +12,13 @@ const getCategories = async(req,res,next) => {
 
 const createCategory = async (req, res, next) => {
     try {
-        const category = await categoryService.createCategory(req.body);
+        const category = await categoryService.createCategory(req.body, req.files[0]);
 
-        return res.status(200).json({category})
+        console.log(category)
+        return res.status(200).json({
+            msg: "Categoría creada con éxito",
+            createdCategory: category
+        })
     } catch (error) {
 
         next(error)
@@ -32,9 +36,38 @@ const deleteCategory = async (req,res,next) => {
     }
 }
 
+const getCategory = async (req,res,next) => {
+    try {
+        let category = await categoryService.getCategory(req.params.categoryId)
+        return res.status(200).json({category})
+    } catch (error) {
+        next(error)
+    }
+}
+
+// const addImage = async (req,res,next) => {
+//     try {
+//         await categoryService.addImage(req.params.categoryId, req.files[0]);
+//         return res.status(200).json("Añadida")
+//     } catch (error) {
+//         next(error)
+//     }
+// }
+// const addDescription = async (req,res,next) => {
+//     try {
+//         await categoryService.addDescription(req.params.categoryId, req.body.description)
+//         return res.status(200).json("Añadida")
+//     } catch (error) {
+//         next(error)
+//     }
+// }
+
 export default {
+    getCategory,
     getCategories,
     createCategory,
-    deleteCategory
+    deleteCategory,
+    // addImage
+    // addDescription
 }
 

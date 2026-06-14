@@ -15,7 +15,9 @@ const createGenre = async (req,res,next) => {
     try {  
         const genre = await genreService.createGenre(req.body);
         
-        return res.status(200).json({genre})
+        return res.status(200).json({
+            msg: "Género creado éxito", 
+            createdGenre: genre})
     } catch (error) {
         next(error)
     }

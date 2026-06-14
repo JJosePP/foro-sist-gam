@@ -9,7 +9,7 @@ export const searchValidator = [
 ]
 
 export const gameValidator = [
-    nameValidator("name",2,30),
+    nameValidator("name",2,60),
     body("developmentCompany")
         .isString().withMessage('La empresa desarrolladora debe ser texto')
         .trim()

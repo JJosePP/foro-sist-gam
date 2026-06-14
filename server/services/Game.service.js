@@ -73,13 +73,14 @@ const editGame = async (gameId, body, files) => {
         }
 
         let normalizedName = body.name
-                .replaceAll(regex_to_remove_special_chars,' ')
-                .replaceAll(regex_to_remove_white_spaces,'-').toLowerCase();
+            .replaceAll(regex_to_remove_special_chars,' ')
+            .replaceAll(regex_to_remove_white_spaces,'-').toLowerCase();
 
+        console.log("NOMBRE: ", normalizedName)
         const existingGame = await gameModel.exists({normalizedName:normalizedName })
 
         if(existingGame){
-            if(existingGame.id !== game.id){
+            if(!existingGame._id.equals(game._id)){
                 throw apiErrors.existingGame
             }
         }
@@ -192,21 +193,25 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
     const filter = {}
 
     if(genres) {
-        const genreDocs = await genreModel.find(
-            {normalizedName: {$in: genres}},
-            {_id:1}
-        );
-        const genreIds = genreDocs.map(g=>g._id);
-        filter.genres = {$all: genreIds};
+        console.log("GENEROS: ", genres)
+        // const genreDocs = await genreModel.find(
+        //     {normalizedName: {$in: genres}},
+        //     {_id:1}
+        // );
+        // const genreIds = genreDocs.map(g=>g._id);
+        // filter.genres = {$all: genreIds};
+        filter.genres = {$all: genres};
+
     }
 
     if (platforms){
-        const platformDocs = await platformModel.find(
-            {normalizedName: {$in: platforms}},
-            {_id:1}
-        );
-        const platformIds = platformDocs.map(p => p._id);
-        filter.platforms = {$in: platformIds};
+        // const platformDocs = await platformModel.find(
+        //     {normalizedName: {$in: platforms}},
+        //     {_id:1}
+        // );
+        // const platformIds = platformDocs.map(p => p._id);
+        // filter.platforms = {$in: platformIds};
+        filter.platforms = {$in: platforms};
     }
     if(search){
         const pipeline = createPipeline(search)
@@ -317,13 +322,14 @@ const getGame = async (gameId) => {
         releaseDate:game.releaseDate.toLocaleDateString(undefined,{year:"numeric",month:"long", day:"numeric"})
     }
     for(let score in formatedGame.rating){
-        formatedGame.rating[score] = formatedGame.rating[score] / formatedGame.numReviews
+        formatedGame.rating[score] = Math.round(((formatedGame.rating[score] / formatedGame.numReviews) + Number.EPSILON) * 100) / 100
     }
     return formatedGame;
 }
 
 //este se va a usar solo para cuando este escribiendo en el buscador sin darle a submit
 const searchGames = async (query) =>{
+    console.log(query)
     const result = await gameModel.aggregate([
         {
             $search: {
@@ -350,6 +356,14 @@ const searchGames = async (query) =>{
     return result;
 }
 
+const getGamesAdmin = async () => {
+    let games = await gameModel.find()
+        .populate({path: "genres", select: "id name"})
+        .populate({path: "platforms", select: "id name"})
+        .sort({name: 1, _id: 1})
+
+    return games
+}
 
 export default {
     createGame,
@@ -358,5 +372,6 @@ export default {
     deleteGame,
     getGames,
     getGame,
-    searchGames
+    searchGames,
+    getGamesAdmin
 }

@@ -2,17 +2,30 @@ import quizService from '../services/Quiz.service.js';
 
 const createQuiz = async(req,res,next) => {
     try {
+        // const data = {
+        //     title: req.body.title,
+        //     description: req.body.description,
+        //     difficulty: req.body.difficulty,
+        //     tags: req.body.tags,
+        //     numQuestions: req.body.numQuestions,
+        //     badge: req.body.badge
+        // };
         const data = {
             title: req.body.title,
             description: req.body.description,
             difficulty: req.body.difficulty,
             tags: req.body.tags,
             numQuestions: req.body.numQuestions,
-            badge: req.body.badge
+            badge: {
+                name: req.body.badgeName
+            }
         };
-
-        await quizService.createQuiz(data);
-        return res.status(200).json({msg: "Prueba creada con éxito"});
+        let quiz = await quizService.createQuiz(data, req.files[0])
+        let q = await quiz.populate({path: "tags", select: "id name"});
+        return res.status(200).json({
+            msg: "Prueba creada con éxito",
+            createdQuiz: q
+        });
     } catch (error) {
         next(error);
     }
@@ -28,7 +41,16 @@ const getQuizzes = async (req,res,next) => {
 
         let result = await quizService.getQuizzes(page, sort);
 
-        return res.status(200).json({result});
+        return res.status(200).json(result);
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getQuizzesAdmin = async (req,res,next) => {
+    try {
+        let result = await quizService.getQuizzesAdmin();
+        return res.status(200).json(result);
     } catch (error) {
         next(error)
     }
@@ -36,15 +58,23 @@ const getQuizzes = async (req,res,next) => {
 
 const editQuiz = async (req,res,next) => {
     try {
-        const data = {
-            title: req.body.title,
-            description: req.body.description,
-            difficulty: req.body.difficulty,
-            tags: req.body.tags,
-            numQuestions: req.body.numQuestions
-        };
-        let quiz = await quizService.editQuiz(req.params.quizId, data);
-        return res.status(200).json({msg: "Prueba editada con éxito", quiz})
+        // const data = {
+        //     title: req.body.title,
+        //     description: req.body.description,
+        //     difficulty: req.body.difficulty,
+        //     tags: req.body.tags,
+        //     numQuestions: req.body.numQuestions,
+        //     badge: {
+        //         name: req.body.badgeName
+        //     }
+        // };
+        let quiz = await quizService.editQuiz(req.params.quizId, req.body, req.files[0]);
+        let q = await quiz.populate({path: "tags", select: "id name"});
+
+        return res.status(200).json({
+            msg: "Prueba editada con éxito", 
+            editedQuiz: q}
+        )
     } catch (error) {
         next(error)
     }
@@ -73,5 +103,6 @@ export default {
     getQuizzes,
     editQuiz,
     deleteQuiz,
-    getNumQuizzes
+    getNumQuizzes,
+    getQuizzesAdmin
 }

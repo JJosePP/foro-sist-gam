@@ -16,7 +16,9 @@ const router = express.Router();
 
 router.get('/', gameControllers.getGames)
 router.get('/search', searchValidator, validateRequest, gameControllers.searchGames)
-router.get('/:gameId',idValidator("gameId"), validateRequest,gameControllers.getGame)
+router.get('/admin',requireToken,tokenIsInvalid, requireAdminStatus, gameControllers.getGamesAdmin)
+
+router.get('/:gameId',gameControllers.getGame)
 router.post('/', requireToken,tokenIsInvalid,requireAdminStatus, upload.fields([{name: 'mainImage'},{name: 'screenshots'}]),gameValidator,validateRequest,mainImageValidator(true),validateOptionalScreenshots,gameControllers.createGame)
 router.put('/:gameId',requireToken,tokenIsInvalid,requireAdminStatus, upload.fields([{name: 'mainImage'},{name: 'screenshots'}]),idValidator("gameId"),gameValidator,validateRequest, mainImageValidator(false), validateOptionalScreenshots,gameControllers.editGame)
 router.put('/:gameId/:imageId', requireToken,tokenIsInvalid, requireAdminStatus, idValidator("gameId"), imageIdValidator,validateRequest, gameControllers.deleteScreenshot)

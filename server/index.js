@@ -30,6 +30,8 @@ import badgeRoutes from './routes/Badge.routes.js';
 import quizRoutes from './routes/Quiz.routes.js';
 // import populateRoutes from './routes/RoutesToPopulate.js'
 import postRoutes from './routes/Post.routes.js'
+import reportRoutes from './routes/Report.routes.js'
+
 const app = express();
 const PORT = process.env.PORT
 // lista de dominios que pueden acceder a la api
@@ -68,9 +70,10 @@ app.use("/api/v1/replies", replyRoutes)
 app.use('/api/v1/tags', tagRoutes)
 app.use('/api/v1/reviews', reviewRoutes)
 app.use('/api/v1/questions', questionRoutes)
-app.use('/api/v1/badges', badgeRoutes)
+// app.use('/api/v1/badges', badgeRoutes)
 app.use('/api/v1/quizzes', quizRoutes)
 app.use('/api/v1/posts', postRoutes)
+app.use('/api/v1/reports', reportRoutes)
 // app.use('/api/v1', populateRoutes)
 
 app.use(cleanUpUploads)

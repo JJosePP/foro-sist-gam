@@ -73,13 +73,13 @@ const userSchema = new mongoose.Schema({
         default: null, 
         expires: 0
     },
-    badges:{
-        type: [{
-            type: mongoose.Types.ObjectId,
-            ref: 'Badge'
-        }],
-        default: []
-    },
+    // badges:{
+    //     type: [{
+    //         type: mongoose.Types.ObjectId,
+    //         ref: 'Badge'
+    //     }],
+    //     default: []
+    // },
     completedQuizzes: {
         type: [{
             type: mongoose.Types.ObjectId,

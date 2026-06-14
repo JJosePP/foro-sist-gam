@@ -228,6 +228,16 @@ export const apiErrors = {
         status: 400,
         title: "Publicación no encontrada",
         details: "La publicación solicitada no existe o ha sido eliminada."
+    },
+    alreadyModerated: {
+        status: 400,
+        title: "Publicación moderada",
+        details: "La publicación ya ha sido moderada y no puede volver a ser reportada."
+    },
+    reportNotFound: {
+        status: 400,
+        title: "Reporte no encontrado",
+        details: "El reporte solicitado no existe o ha sido eliminado."
     }
     // existingUserName: {
     //     status: 400,

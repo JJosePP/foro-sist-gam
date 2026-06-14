@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useUserStore} from "../stores/userStore.js";
-
-
+// import router from "@/router/index.js";
+// const controller = new AbortController()
 
 const api = axios.create({
     baseURL: "http://localhost:3000/api/v1",
@@ -27,6 +27,13 @@ const processQueue = () => {
 
 api.interceptors.response.use(res => res, async error => {
     const originalRequest = error.config;
+
+    if(!useUserStore.token){
+        return Promise.reject(error)
+    }
+    if(originalRequest.skipAuthRefresh){
+        return Promise.reject(error)
+    }
     if(error.response?.status === 401 && !originalRequest._retry){
         originalRequest._retry = true;
         if(isRefreshing) {
@@ -54,6 +61,28 @@ api.interceptors.response.use(res => res, async error => {
     }
     return Promise.reject(error);
 });
+
+// api.interceptors.response.use((response) => {
+//     return response;
+// }, function (error) {
+//     console.log("ERORRRRR: ", error)
+//     if(error.response.status === 404){
+//         console.log("ENTRA")
+//         console.log(router)
+//         controller.abort()
+//         router.push({name: '404'});
+//     }
+//     return Promise.reject(error.response)
+// })
+// api.interceptors.response.use(null, error => {
+//   let path = '/error';
+//   switch (error.response.status) {
+//     case 401: path = '/login'; break;
+//     case 404: path = '/404'; break;
+//   }
+//   router.push(path);
+//   return Promise.reject(error);
+// });
 
 export default api;
 

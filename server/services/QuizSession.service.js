@@ -20,7 +20,7 @@ const createSession = async (quizId, uid) => {
     }
 
     let quiz = await quizService.getQuiz(quizId);
-    let randomQuestions = await questionService.getRandomQuestions(quiz.tags, quiz.normalizedDifficulty, quiz.numQuestions);
+    let randomQuestions = await questionService.getRandomQuestions(quiz.tags, quiz.difficulty, quiz.numQuestions);
 
     const session = await quizSessionModel.create({
         user: uid,
@@ -53,26 +53,68 @@ const answerQuestion = async(sesiondId, userAnswer) => {
     }
 
     session.currentQuestionIndex++;
-
+    //probar porque creo que la ultima pregunta no se responde. Creo que debe ser >
     if(session.currentQuestionIndex >= session.questions.length){
         session.finished = true;
         const passingScore = Math.ceil(session.questions.length * 0.8);
 
         if(session.correctAnswers >= passingScore){
             session.passed = true;
-            let quiz = await quizService.getQuiz(session.quiz);
+            // let quiz = await quizService.getQuiz(session.quiz);
 
-            await Promise.all([
-                userService.addBadgeToUser(quiz.badge,session.user),
-                badgeService.insertUserToBadge(quiz.badge, session.user),
-                quizService.addUserToWinners(session.quiz, session.user)
-            ]);
+            // await Promise.all([
+            //     // userService.addBadgeToUser(quiz.badge._id,session.user),
+            //     // badgeService.insertUserToBadge(quiz.badge, session.user),
+            //     // quizService.addUserToWinners(session.quiz, session.user)
+            //     userService.markQuizAsCompleted(session.quiz, session.user)
+            // ]);
+            await userService.markQuizAsCompleted(session.quiz, session.user)
         }
     }
+    console.log("QUESTION INDEX: ", session.currentQuestionIndex)
     return await session.save();
 }
 
+const getSession = async (sessionId,uid) => {
+    const sessions = await quizSessionModel.find({
+        $and: [
+            {_id: sessionId},
+            {user: uid}
+        ]
+    });
+    const session = sessions[0];
+    console.log('SESION: ',sessions)
+
+    if(!session){
+        apiErrors.sessionNotFound;
+    }
+
+    if(Date.now() > session.expiresAt){
+        session.finished = true;
+        await session.save()
+        throw apiErrors.expiredSession
+    }
+
+    return session
+}
+
+const endSession = async (sessionId, uid) => {
+    const activeSession = await quizSessionModel.findOne({
+        _id:sessionId,
+        user: uid,
+        finished: false,
+        expiresAt: {$gt: new Date()}
+    })
+    if(!activeSession){
+        throw apiErrors.sessionNotFound;
+    }
+
+    activeSession.finished = true
+    await activeSession.save()
+}
 export default {
     createSession,
-    answerQuestion
+    answerQuestion,
+    getSession,
+    endSession
 }

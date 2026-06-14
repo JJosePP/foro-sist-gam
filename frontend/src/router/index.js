@@ -4,8 +4,14 @@ import { useUserStore } from "../stores/userStore.js";
 import { useToastStore } from "../stores/toastStore.js";
 import profileView from "../views/ProfileView.vue";
 import editProfileView from "../views/editProfileView.vue";
-import gameInfoView from "../views/gameInfoView.vue";
-import threadView from "../views/threadView.vue";
+import gamesView from "../views/GamesView.vue";
+import gameInfoView from "../views/GameInfoView.vue"
+import forumView from "../views/CategoriesView.vue"
+import threadsView from "../views/ThreadsView.vue"
+import threadView from "../views/ThreadView.vue"
+import quizzesView from "../views/QuizzesView.vue"
+import quizView from "../views/QuizView.vue"
+import adminView from "@/views/AdminView.vue";
 
 const routes = [
     {
@@ -53,9 +59,24 @@ const routes = [
                 }
             },
             {
+                path: "games",
+                component: gamesView,
+                name: 'games'
+            },
+            {
                 path: "games/:gameId",
                 component: gameInfoView,
                 name: 'gameInfo'
+            },
+            {
+                path: "categories",
+                component: forumView,
+                name: 'foro'
+            },
+            {
+                path: "categories/:categoryId/threads",
+                component: threadsView,
+                name: 'threads'
             },
             {
                 path: "threads/:threadId",
@@ -63,10 +84,34 @@ const routes = [
                 name: 'thread'
             },
             {
+                path: "quizzes",
+                component: quizzesView,
+                name: 'quizzes'
+
+            },
+            {
+                path: "quizzes/:quizId",
+                component: quizView,
+                name: 'quiz'
+            },
+            {
+                path: "admin",
+                component: adminView,
+                name: 'admin',
+                meta: {
+                    auth: true,
+                }
+            },
+            {
                 path:'/:pathName(.*)',
                 name: 'NotFound',
                 component: () => import('../views/NotFoundView.vue')
-              },
+            },
+            {
+                path:'/notFound',
+                name: '404',
+                component: () => import('../views/NotFoundView.vue')
+            }
         ],
     },
 ];

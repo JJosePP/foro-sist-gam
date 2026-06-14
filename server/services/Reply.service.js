@@ -20,7 +20,9 @@ const createReply = async (threadId, content, userId) => {
 
     await reply.validate();
     await thread.updateOne({
-        numReplies: 1
+        $inc: {
+            numReplies: 1
+        }
     })
 
     return await reply.save();

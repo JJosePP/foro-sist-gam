@@ -5,31 +5,36 @@ import { normalizeName } from "../utils/namedEntitySchema.js";
 import { deleteImage, uploadImage } from '../utils/cloudinary.js';
 import fs from 'fs-extra'
 
-const getQuestions = async (page) => {
-    let hasNextPage = false;
-    let resultsPerPage = 20;
+const getQuestions = async () => {
+    // let hasNextPage = false;
+    // let resultsPerPage = 20;
 
-    let [result, totalItems] = await Promise.all([
-        questionModel.find()
-            .populate({path: "tags", select: "id name"})
-            .sort({question: 1, _id: 1})
-            .skip((page - 1) * resultsPerPage)
-            .limit(resultsPerPage + 1),
-        questionModel.countDocuments()
-    ])
+    // let [result, totalItems] = await Promise.all([
+    //     questionModel.find()
+    //         .populate({path: "tags", select: "id name"})
+    //         .sort({question: 1, _id: 1})
+    //         .skip((page - 1) * resultsPerPage)
+    //         .limit(resultsPerPage + 1),
+    //     questionModel.countDocuments()
+    // ])
+    const result = await questionModel.find()
+        .populate({path: "tags", select: "id name"})
+        .sort({question: 1, _id: 1})
 
-    if(result.length > resultsPerPage){
-        hasNextPage = true
-        result.pop()
-    }
 
-    return {
-        data: result,
-        currentPage: page,
-        hasNextPage,
-        totalPages: Math.ceil(totalItems/resultsPerPage),
-        totalItems: totalItems
-    }
+    // if(result.length > resultsPerPage){
+    //     hasNextPage = true
+    //     result.pop()
+    // }
+
+    // return {
+    //     data: result,
+    //     currentPage: page,
+    //     hasNextPage,
+    //     totalPages: Math.ceil(totalItems/resultsPerPage),
+    //     totalItems: totalItems
+    // }
+    return result
 }
 
 const getQuestion = async (questionId) => {
@@ -49,7 +54,7 @@ const getRandomQuestions = async (tags, difficulty, numQuestions) => {
             $match: {
                 $and: [
                     {tags: {$in: tags}},
-                    {normalizedDifficulty: difficulty}
+                    {difficulty: difficulty}
                 ]
             }
         },
@@ -64,8 +69,6 @@ const getRandomQuestions = async (tags, difficulty, numQuestions) => {
 }
 
 const createQuestion = async (data, file) => {
-    data.normalizedDifficulty = normalizeName(data.difficulty);
-
     let question = new questionModel(data);
     await question.validate();
 
@@ -78,7 +81,7 @@ const createQuestion = async (data, file) => {
         await fs.unlink(file.path)
     }
 
-    await question.save()
+   return await question.save()
 }
 
 const editQuestion = async (questionId, data, file) => {
@@ -94,7 +97,6 @@ const editQuestion = async (questionId, data, file) => {
         question.distractors = data.distractors;
         question.tags = data.tags;
         question.difficulty = data.difficulty;
-        question.normalizedDifficulty = normalizeName(data.difficulty);
         await question.validate()
    
         if(file){

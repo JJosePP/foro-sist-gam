@@ -15,7 +15,9 @@ const createPlatform = async (req,res,next) => {
     try {
         const platform = await platformService.createPlatform(req.body)
 
-        return res.status(200).json({platform})
+        return res.status(200).json({
+            msg: "Plataforma creada éxito", 
+            createdPlatform: platform})
     } catch (error) {
         next(error)
     }

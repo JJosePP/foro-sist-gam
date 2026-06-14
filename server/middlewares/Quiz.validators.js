@@ -1,7 +1,8 @@
 import { body } from "express-validator";
+import { nameValidator } from "./commonValidators.js";
 
 
-export const partialQuizValidator = [
+export const quizValidator = [
     body("title")
         .isString().withMessage("El título debe ser texto")
         .bail()
@@ -14,7 +15,7 @@ export const partialQuizValidator = [
         .isString().withMessage("La descripción debe ser texto")
         .bail()
         .trim()
-        .isLength({max: 1000}).withMessage("La La descripción tiene 1000 caracteres como máximo"),
+        .isLength({max: 1000}).withMessage("La descripción puede tener 1000 caracteres como máximo"),
     body("difficulty")
         .isString().withMessage("La dificultad debe ser texto")
         .bail()
@@ -32,15 +33,22 @@ export const partialQuizValidator = [
     body("numQuestions")
         .notEmpty().withMessage("El número de preguntas es obligatorio")
         .bail()
-        .isInt({min: 10}).withMessage("El tipo de dato deber ser un número entero mayor o igual que 10")
+        .isInt({min: 10}).withMessage("El tipo de dato deber ser un número entero mayor o igual que 10"),
+    body("badgeName")
+        .isString().withMessage("El nombre de la insignia debe ser texto")
+        .bail()
+        .trim()
+        .notEmpty().withMessage("El nombre de la insignia no puede estar vacío")
+        .bail()
+        .isLength({min: 2, max: 30}).withMessage("El nombre de la insignia debe contener entre 2 y 30 caracteres"),
 ];
 
-export const quizValidator = [
-    ...partialQuizValidator,
-    body("badge")
-        .isString().withMessage("El emblema debe ser un identificador en formato texto")
-        .bail()
-        .notEmpty().withMessage("El emblema no puede ser vacío")
-        .bail()
-        .isMongoId().withMessage("El identificador proporcionado no tiene un formato válido (cadena hexadecimal de 24 caracteres)")
-];
+// export const quizValidator = [
+//     ...partialQuizValidator,
+//     body("badge")
+//         .isString().withMessage("El emblema debe ser un identificador en formato texto")
+//         .bail()
+//         .notEmpty().withMessage("El emblema no puede ser vacío")
+//         .bail()
+//         .isMongoId().withMessage("El identificador proporcionado no tiene un formato válido (cadena hexadecimal de 24 caracteres)")
+// ];

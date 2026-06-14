@@ -6,7 +6,7 @@ export const userIsBanned = async (req,res,next) => {
     try {
         let user = await userModel.findById(req.uid);
 
-        if(user.authorized === false){
+        if(user?.authorized === false){
             res.clearCookie("refreshToken")
             let banDate = user.bannedUntil.toLocaleString(undefined,
                 {year:"numeric",month:"long", day:"numeric",hour: 'numeric',minute:'numeric' })

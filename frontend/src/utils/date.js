@@ -8,3 +8,7 @@ dayjs.locale('es');
 export const formatRelativeDate = (date) => {
     return dayjs(date).fromNow()
 }
+
+export const formatBanDate = (date) => {
+    return date ? dayjs(date).format('DD-MM-YYYY') : '-'
+}

@@ -1,5 +1,26 @@
 import mongoose from "mongoose";
 
+const badgeSchema = new mongoose.Schema({
+    name:{
+        type: String,
+        required: [true, 'El nombre de la insignia es requerido'],
+    },
+    normalizedName:{
+        type: String,
+        unique: true
+    },
+    image:{
+        public_id: {
+            type: String,
+            required: true
+        },
+        secure_url: {
+            type: String,
+            required: true
+        }
+    }
+});
+
 const quizSchema = new mongoose.Schema({
     title:{
         type: String,
@@ -19,9 +40,6 @@ const quizSchema = new mongoose.Schema({
             message: '{VALUE} no es correcto'
         }
     },
-    normalizedDifficulty: {
-        type: String
-    },
     tags: {
         type: [{
             type: mongoose.Types.ObjectId,
@@ -38,18 +56,19 @@ const quizSchema = new mongoose.Schema({
             message: '{VALUE} debe ser un valor entero'
         }
     },
-    badge:{
-        type: mongoose.Types.ObjectId,
-        ref: 'Badge',
-        require: [true, 'La insignia es requerida']
-    },
-    winners: {
-        type: [{
-            type: mongoose.Types.ObjectId,
-            ref: 'User'
-        }],
-        default: []
-    }
+    // badge:{
+    //     type: mongoose.Types.ObjectId,
+    //     ref: 'Badge',
+    //     require: [true, 'La insignia es requerida']
+    // },
+    badge: badgeSchema,
+    // winners: {
+    //     type: [{
+    //         type: mongoose.Types.ObjectId,
+    //         ref: 'User'
+    //     }],
+    //     default: []
+    // }
 }, {
     timestamps: true
 })

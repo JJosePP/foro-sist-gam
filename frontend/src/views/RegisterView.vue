@@ -110,7 +110,7 @@ const handleSubmit = async () => {
             </div>
             <div class="flex justify-center">
                 <div class="mb-3 w-96 flex justify-center">
-                    <button typeof="submit"
+                    <button type="submit"
                         class="bg-indigo-500 hover:bg-indigo-600 cursor-pointer px-12 py-3 rounded-md text-white text-2xl flex-1">Registro</button>
                 </div>
             </div>

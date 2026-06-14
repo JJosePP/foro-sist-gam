@@ -23,32 +23,50 @@ const createThread = async (body, userId) => {
     return await thread.save()
 }
 const createPipeline = (search, category) => {
+    // const pipeline = [
+    //     {
+    //         $search: {
+    //             index: "threadsIndex",
+    //             compound: {
+    //                 must: [
+    //                     {
+    //                         autocomplete: {
+    //                             query: search,
+    //                             path: "title"
+    //                         }
+    //                     },
+    //                     {
+    //                         equals: {
+    //                             path: "kind",
+    //                             value: "Thread"
+    //                         }
+    //                     },
+    //                     {
+    //                         equals: {
+    //                             path: "category",
+    //                             value: category
+    //                         }
+    //                     }
+    //                 ]
+    //             }
+    //         }
+    //     }
+    // ]
+
     const pipeline = [
         {
             $search: {
                 index: "threadsIndex",
-                compound: {
-                    must: [
-                        {
-                            autocomplete: {
-                                query: search,
-                                path: "title"
-                            }
-                        },
-                        {
-                            equals: {
-                                path: "kind",
-                                value: "Thread"
-                            }
-                        },
-                        {
-                            equals: {
-                                path: "category",
-                                value: category
-                            }
-                        }
-                    ]
+                autocomplete: {
+                    query: search,
+                    path: "title"
                 }
+            }
+        },
+        {
+            $match: {
+                kind: "Thread",
+                category: category
             }
         }
     ]
@@ -64,7 +82,7 @@ const getThreads = async (category, resultsPerPage, page, sort, search) => {
         throw apiErrors.missingCategoryQuery
     }
     if(search){
-        const pipeline = createPipeline(search,new mongoose.Types.ObjectId(category))
+        const pipeline = createPipeline(search,new mongoose.Types.ObjectId(category))  
         let searchPipeline = pipeline.slice()
         let countPipeline = pipeline.slice()
 
@@ -148,7 +166,7 @@ const getThreads = async (category, resultsPerPage, page, sort, search) => {
     }
 
     return {
-        data: result,
+        threads: result,
         currentpage: page,
         hasNextPage,
         totalPages: Math.ceil(totalItems/resultsPerPage),
@@ -179,7 +197,8 @@ const editThread = async(threadId, uid, body) => {
 
 const getThread = async(threadId) => {
     let thread = await threadModel.findById(threadId)
-        .populate({path: "user", select: "id userName profilePic.secure_url"});
+        .populate({path: "user", select: "id userName profilePic.secure_url"})
+        .populate({path: "category", select: "id name"});
     
     if(!thread){
         throw apiErrors.threadNotFound

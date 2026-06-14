@@ -52,7 +52,7 @@ const getThreads = async (req,res,next) => {
 
         let result = await threadService.getThreads(category, resultsPerPage, page, sort, search);
 
-        return res.status(200).json({result})
+        return res.status(200).json(result)
     } catch (error) {
         next(error)
     }

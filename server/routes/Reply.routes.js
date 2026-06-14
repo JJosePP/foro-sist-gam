@@ -10,6 +10,6 @@ import { idValidator } from "../middlewares/commonValidators.js";
 
 const router = express.Router();
 
-router.put('/:replyId',requireToken, tokenIsInvalid, userIsBanned, upload.none(), idValidator("replayId"), replyValidator, validateRequest, replyControllers.editReply)
+router.put('/:replyId',requireToken, tokenIsInvalid, userIsBanned, upload.none(), idValidator("replyId"), replyValidator, validateRequest, replyControllers.editReply)
 
 export default router;

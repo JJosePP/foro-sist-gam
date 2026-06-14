@@ -8,7 +8,7 @@
     const userStore = useUserStore()
     const userData = ref({})
     const isLoading = ref(true)
-    const MIN_SKELETON_TIME = 500
+    // const MIN_SKELETON_TIME = 500
     const formattedDate = computed(() => {
         return new Date(userData.value.createdAt).toLocaleDateString()
     })
@@ -16,11 +16,11 @@
         return userStore.userId === route.params.userId
     }) 
     const numBadges = computed(() => {
-        return userData.value.badges?.length ?? 0
+        return userData.value.completedQuizzes?.length ?? 0
     })
     const numQuizzes = ref(0);
     const getData = async () =>{ 
-        const start = Date.now()
+        // const start = Date.now()
         try {
             const {data} = await api({
                 url: route.path,
@@ -31,19 +31,19 @@
             });
 
             userData.value = data.user
-
+            console.log(userData.value)
             return userData
         } catch (error) {
             console.log("ERROR: ", error)
-        } finally{
-            // isLoading.value = false
-            const elapsed = Date.now() - start
-            const remaining = MIN_SKELETON_TIME - elapsed
+        }// } finally{
+        //     // isLoading.value = false
+        //     const elapsed = Date.now() - start
+        //     const remaining = MIN_SKELETON_TIME - elapsed
 
-            setTimeout(() => {
-                isLoading.value = false
-            }, Math.max(0, remaining))
-        }
+        //     setTimeout(() => {
+        //         isLoading.value = false
+        //     }, Math.max(0, remaining))
+        // }
     }
 
     //hacer endpoint en back, y hacer funcion aqui para llamar endpoint
@@ -106,10 +106,23 @@
     //     await getData()
     // })
     onMounted(async () => {
-        await getData()
-        await getUserPosts()
-        await getNumQuizzes()
-        //llamar funcion
+        
+        const start = Date.now()
+        try {
+            await getData()
+            await getUserPosts()
+            await getNumQuizzes()
+        } catch (error) {
+            console.log(error)
+        } finally {
+            isLoading.value = false
+            // const elapsed = Date.now() - start
+            // const remaining = MIN_SKELETON_TIME - elapsed
+
+            // setTimeout(() => {
+            //     isLoading.value = false
+            // }, Math.max(0, remaining))
+        }
     })
     // const getData2 = () => {
     //     api({
@@ -330,11 +343,11 @@
                     <div class="flex flex-row lg:grid lg:grid-cols-4 p-2 gap-4 max-h-80 overflow-x-auto lg:overflow-y-auto scrollbar ">
                         <template v-for="n in numQuizzes">
                             <div class="flex flex-col items-center">
-                                <div v-if="userData?.badges?.[n-1]" class="w-24 h-24 flex flex-col justify-center">
-                                    <img v-bind:src="userData.badges[n-1].image.secure_url" class="object-contain"/>
+                                <div v-if="userData?.completedQuizzes?.[n-1]" class="w-24 h-24 flex flex-col justify-center">
+                                    <img v-bind:src="userData.completedQuizzes[n-1].badge.image.secure_url" class="object-contain"/>
                                 </div>
                                 <div v-else class="w-24 h-24 bg-dark-base opacity-40 rounded-2xl border-[1px] border-black"></div>
-                                <h3 v-if="userData?.badges?.[n-1]" class="font-semibold text-sm sm:text-base text-gray-400">{{ userData?.badges?.[n-1]?.name }}</h3>
+                                <h3 v-if="userData?.completedQuizzes?.[n-1]" class="font-semibold text-sm sm:text-base text-gray-400">{{ userData?.completedQuizzes?.[n-1]?.badge.name }}</h3>
                                 <h3 v-else class="font-semibold text-sm sm:text-base text-gray-950/60">Oculto</h3>
                             </div>
                         </template>
@@ -382,7 +395,7 @@
     .scrollbar::-webkit-scrollbar-thumb {
         background: #16161e;
         border-radius: 100vh;
-        border: 1px solid #00d4ff;
+        border: 1px solid rgb(0 212 255 / 0.3);
     }
 
     .scrollbar::-webkit-scrollbar-thumb:hover {

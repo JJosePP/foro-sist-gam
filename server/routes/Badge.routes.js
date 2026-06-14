@@ -11,9 +11,9 @@ import { upload } from "../middlewares/multer.js";
 
 const router = express.Router();
 
-router.get('/', requireToken, tokenIsInvalid, requireAdminStatus, badgeControllers.getBadges);
-router.post('/', requireToken,tokenIsInvalid, requireAdminStatus, upload.array('image'), badgeValidator, validateRequest, imageValidator(true), badgeControllers.createBadge);
-router.put('/:badgeId', requireToken,tokenIsInvalid, requireAdminStatus, upload.array('image'), idValidator('badgeId'), badgeValidator, validateRequest, imageValidator(false), badgeControllers.editBadge);
-router.delete('/:badgeId', requireToken,tokenIsInvalid, requireAdminStatus, idValidator('badgeId'), validateRequest, badgeControllers.deleteBadge);
+// router.get('/', requireToken, tokenIsInvalid, requireAdminStatus, badgeControllers.getBadges);
+// router.post('/', requireToken,tokenIsInvalid, requireAdminStatus, upload.array('image'), badgeValidator, validateRequest, imageValidator(true), badgeControllers.createBadge);
+// router.put('/:badgeId', requireToken,tokenIsInvalid, requireAdminStatus, upload.array('image'), idValidator('badgeId'), badgeValidator, validateRequest, imageValidator(false), badgeControllers.editBadge);
+// router.delete('/:badgeId', requireToken,tokenIsInvalid, requireAdminStatus, idValidator('badgeId'), validateRequest, badgeControllers.deleteBadge);
 
 export default router;

@@ -22,8 +22,8 @@ export const errorHandler = (err, req, res, next) => {
     };
 
     if(err.name === "CastError" && err.kind === "ObjectId" || err.name === "BSONError"){
-        return res.status(400).json({
-            status: 400,
+        return res.status(404).json({
+            status: 404,
             title: "Identificador no válido",
             details: "El identificador proporcionado no tiene un formato válido (cadena hexadecimal de 24 caracteres)"
         });

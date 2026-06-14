@@ -48,9 +48,6 @@ const questionSchema = new mongoose.Schema({
             message: "{VALUE} no es correcto",
         },
     },
-    normalizedDifficulty: {
-        type: String
-    },
     image: {
         public_id: {
             type: String,
@@ -64,7 +61,7 @@ const questionSchema = new mongoose.Schema({
 });
 
 questionSchema.index({question: 1, _id: 1});
-questionSchema.index({tags: 1, normalizedDifficulty: 1});
+questionSchema.index({tags: 1, difficulty: 1});
 
 const Question = mongoose.model('Question', questionSchema)
 

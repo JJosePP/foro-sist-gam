@@ -92,7 +92,7 @@ const login = async (body) => {
     
     if(user.deleteOn !== null){
         user.deleteOn = null;
-        await badgeService.insertUserToBadges(user.badges, user._id);
+        // await badgeService.insertUserToBadges(user.badges, user._id);
         await user.save();
     }
 

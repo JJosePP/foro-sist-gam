@@ -40,12 +40,12 @@ export const useUserStore = defineStore("user", () => {
 
     const access = async (userName, password) => {
         try {
-            console.log("AQUI")
             const res = await api.post("/login", {
                 userName: userName,
                 password: password,
+            },{
+                skipAuthRefresh: true
             });
-            console.log("AQUI2")
 
             const now = Date.now();
             const data = res.data;
@@ -64,8 +64,6 @@ export const useUserStore = defineStore("user", () => {
             setTime();
             return data;
         } catch (error) {
-            //MIRAR PQ CUAANDO PONES CONTRASEÑA INCORRECTA NO APARECE MENSAJE TOAST CON ERROR
-            console.log("EEEEEE", error.response)
             if (error.response) {
                 throw error.response.data;
             }
@@ -95,7 +93,11 @@ export const useUserStore = defineStore("user", () => {
 
     const refreshToken = async () => {
         try {
-            const res = await api.get("/refresh");
+            const res = await api.get("/refresh",
+                {
+                    skipAuthRefresh: true
+                }
+            );
             const now = Date.now();
             // token.value = res.data.token;
 
@@ -127,7 +129,12 @@ export const useUserStore = defineStore("user", () => {
 
     const logout = async () => {
         try {
-            await api.post("/logout");
+            // await api.post("/logout");
+            await api({
+                url: "/logout",
+                method: 'POST',
+                skipAuthRefresh: true
+            })
         } catch (error) {
             console.log(error);
         } finally {
@@ -147,6 +154,7 @@ export const useUserStore = defineStore("user", () => {
 
     // GETTERS (computed)
     const isAdmin = computed(() => roles.value.includes('administrator'))
+    const isModOrAdmin = computed(() => roles.value.includes('moderator'))
 
     return {
         userId,
@@ -159,6 +167,7 @@ export const useUserStore = defineStore("user", () => {
         access,
         register,
         setToken,
-        isAdmin
+        isAdmin,
+        isModOrAdmin
     };
 });

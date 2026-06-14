@@ -9,11 +9,14 @@ const getUser = async (userId, uid) => {
     if(userId === uid){
         user = await userModel.findById(userId)
             .select("-password -normalizedName -authorized -bannedUntil -deleteOn")
-            .populate({path: "badges", select: "name image quiz"})
+            // .populate({path: "badges", select: "name image quiz"})
+            .populate({path: "completedQuizzes", select: "_id title badge.name badge.image.secure_url"})
     }else{
         user = await userModel.findById(userId)
-            .select("_id userName profilePic.secure_url description roles badges createdAt")
-            .populate({ path: "badges", select: "name image.secure_url quiz" })
+            .select("_id userName profilePic.secure_url description roles createdAt")
+            // .populate({ path: "badges", select: "name image.secure_url quiz" })
+            .populate({path: "completedQuizzes", select: "_id title badge.name badge.image.secure_url"})
+
     }
     if(!user){
         throw apiErrors.userNotFound
@@ -106,6 +109,7 @@ const changeProfilePic = async (user,file) => {
 
 const banUser = async (userId, banDate) => {
     let user = await userModel.findById(userId)
+        .select('_id userName profilePic.secure_url authorized bannedUntil');
     if(!user){
         throw apiErrors.userNotFound
     }
@@ -120,7 +124,8 @@ const banUser = async (userId, banDate) => {
 }
 
 const unBanUser = async (userId) => {
-    let user = await userModel.findById(userId);
+    let user = await userModel.findById(userId)
+        .select('_id userName profilePic.secure_url authorized bannedUntil');
     if(!user){
         throw apiErrors.userNotFound;
     }
@@ -143,7 +148,7 @@ const deleteUser = async(userId, uid) => {
         throw apiErrors.unauthorized
     }
     user.deleteOn = Date.now() + 30*24*60*60*1000;
-    await badgeService.removeUserFromBadges(user._id);
+    // await badgeService.removeUserFromBadges(user._id);
     await user.save();
     
     return user
@@ -170,10 +175,36 @@ const changePassword = async (userId,uid, newPassword) => {
 
 }
 
-const addBadgeToUser = async (badgeId, userId) => {
-    await userModel.findByIdAndUpdate(userId, {$addToSet: {badges: badgeId}})
+const markQuizAsCompleted = async (quizId, userId) => {
+    await userModel.findByIdAndUpdate(userId, {$addToSet: {completedQuizzes: quizId}})
 }
 
+const removeQuizFromUsers = async (quizId) => {
+     await userModel.updateMany(
+        {completedQuizzes: quizId},
+        {$pull:{completedQuizzes: quizId}}
+    )
+}
+// const addBadgeToUser = async (badgeId, userId) => {
+//     await userModel.findByIdAndUpdate(userId, {$addToSet: {badges: badgeId}})
+// }
+const getCompletedQuizzes = async (uid) => {
+    let user = await userModel.findById(uid)
+    let completedQuizzes = user?.completedQuizzes
+    if(!completedQuizzes){
+        completedQuizzes = []
+    }
+
+    return completedQuizzes
+}
+
+const getUsers = async () => {
+    let users = await userModel.find()
+    .sort({userName: 1})
+    .select('_id userName profilePic.secure_url authorized bannedUntil')
+
+    return users
+}
 export default {
     getUser, 
     editProfile,
@@ -181,5 +212,9 @@ export default {
     unBanUser,
     deleteUser,
     changePassword,
-    addBadgeToUser
+    // addBadgeToUser,
+    markQuizAsCompleted,
+    removeQuizFromUsers,
+    getCompletedQuizzes,
+    getUsers
 }

@@ -11,6 +11,7 @@ export default {
         'dark-surface': '#16161e',
         'neon-blue': '#00d4ff',
         'neon-purple': '#9d4edd',
+        'dark-reply': '#111114'
       },
       fontFamily: {
         "display": ["Public Sans"],
