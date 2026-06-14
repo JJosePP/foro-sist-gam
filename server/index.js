@@ -40,7 +40,7 @@ const __filename = fileURLToPath(import.meta.url); // get the resolved path to t
 const __dirname = path.dirname(__filename); // get the name of the directory
 
 // middlewares
-console.log(whiteList)
+console.log("LISTA BLANCA: ", whiteList)
 app.use(cors({
     origin: function(origin, callback){
         console.log("ORIGEN: ", origin)
