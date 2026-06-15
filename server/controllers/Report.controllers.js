@@ -20,12 +20,10 @@ const deleteReport = async(req,res,next) => {
 
 const getReports = async (req,res,next) => {
     try {
-        let page = Math.floor(req.query.page) || 1;
-        if(page < 1) {page = 1};
         
-        let result = await reportService.getReports(page);
+        let result = await reportService.getReports();
 
-        return res.status(200).json({result})
+        return res.status(200).json(result)
 
     } catch (error) {
         next(error)

@@ -100,17 +100,13 @@
         <ul class="flex flex-col max-h-[560px] rounded-b-md divide-y divide-neon-blue/30 bg-dark-surface border-[1px] border-neon-blue/30 overflow-y-scroll">
             <li v-for="genre in genres"  class="py-2 px-20 flex flex-row justify-between items-center">
                 <p class="font-semibold text-lg text-gray-200">{{genre.name}}</p>
-                <!-- <div class="flex flex-row gap-3">
-                    <v-icon name="oi-pencil" scale="1.3" class="text-neon-blue"/>
-                    <v-icon name="md-delete-outlined" scale="1.3" class="text-red-950"/>
-                </div> -->
+
                 <button type="button" @click="deleteGenre(genre._id)">
                     <v-icon name="md-delete-outlined" scale="1.3" class="text-red-950"/>
                 </button>
             </li>
         </ul>
         <div class="flex flex-row justify-center">
-            <!-- añadir enlace ha vista de formulario -->
             <button type="button" class="px-8 py-2 rounded-md font-semibold text-lg bg-neon-blue" @click="handleAddButton">{{formIsOpen ? 'Cancelar' : 'Añadir'}}</button>
         </div>
         <div v-if="formIsOpen" class="flex flex-col items-center justify-center gap-2 p-3 bg-dark-surface rounded-md border-[1px] border-neon-blue/30">

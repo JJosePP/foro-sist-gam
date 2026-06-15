@@ -36,6 +36,7 @@
     const isLoading = ref(true)
     const loadingReviews = ref(true)
     const reportingReviewId = ref(null)
+    const moderatingReviewId = ref(null)
     const visiblePages= computed(() => {
         const pages = [];
         const total = totalPages.value;
@@ -337,22 +338,43 @@
             currentPage.value = page
         }
     };
-    // watch(loadingReviews,async (loading) => {
-    //     console.log(loadingReviews.value)
-    //     console.log(route.hash)
-    //     console.log(isLoading.value)
-    //     console.log("QUE COÑO ES LOADING",loading)
-    //     if (!loading && route.hash) {
-    //         await nextTick();
-    //         let d = document.querySelector(route.hash)
-    //         console.log('dede',d)
-    //         document
-    //             .querySelector(route.hash)
-    //             ?.scrollIntoView({
-    //                 behavior: 'smooth'
-    //         });
-    //     }
-    // })
+
+    const handleModerateButton = (id) => {
+        if(moderatingReviewId.value === id){
+            moderatingReviewId.value = null
+        }else{
+            moderatingReviewId.value = id
+        }
+    }
+
+    const moderationSchema = yup.object({
+        reason: yup.string().required('Debe elegir una opción')
+    })
+
+    const handleModerate = async (values, postId, index) => {
+        try {
+            const {data} = await api.put(`/posts/${postId}/moderate`,
+                {
+                    reason: values.reason
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + userStore.token
+                    }
+                }
+            )
+            reviews.value[index].isModerated = true
+            await nextTick()
+            toastStore.alert(data.msg)
+            
+        } catch (error) {
+            console.log("ERROR: ", error)
+            toastStore.alert(error.response.data.details, 'error')
+        } finally{
+            moderatingReviewId.value = null
+        }
+    }
+
     onMounted(async () => {
         try {
             await getGame()
@@ -470,76 +492,6 @@
                 </div>
 
             </div>
-            <!-- area para escribir reseña -->
-            <!-- <Form v-if="writeReviewIsOpen && userStore.token" @submit="handleSubmit" @invalid-submit="onInvalidSubmit" v-bind:validation-schema="validationSchema" id="form" class="flex flex-col gap-2 p-3 bg-dark-surface rounded-2xl border-[1px] border-neon-blue/30">
-                <div class="grid grid-cols-2 md:grid-cols-3 xl:flex gap-10 mx-auto xl:flex-wrap">
-                    <div class="flex flex-col gap-1 items-start xl:items-center">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <label for="rOverall" class="font-bold text-gray-400">General:</label>
-                            <Field v-model="rating.overall" id="rOverall" name="overall" type="number" min="1" max="100"   class="bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 w-14 rounded-md text-center"></Field>
-                        </div>
-                        <p class="text-red-500 text-sm text-center">
-                            <ErrorMessage name="overall"></ErrorMessage>
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-1 items-start xl:items-center">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <label for="rStory" class="font-bold text-gray-400">Historia:</label>
-                            <Field v-model="rating.story" id="rStory" name="story" type="number" min="1" max="100"class="bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 w-14 rounded-md text-center"></Field>
-                        </div>
-                        <p class="text-red-500 text-sm">
-                            <ErrorMessage name="story"></ErrorMessage>
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-1 items-start xl:items-center">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <label for="rGameplay" class="font-bold text-gray-400">Jugabilidad:</label>
-                            <Field v-model="rating.gameplay" id="rGameplay" name="gameplay" type="number" min="1" max="100" class="bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 w-14 rounded-md text-center"></Field>
-                        </div>
-                        <p class="text-red-500 text-sm">
-                            <ErrorMessage name="gameplay"></ErrorMessage>
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-1 items-start xl:items-center">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <label for="rTechnicalSection" class="font-bold text-gray-400">Apartado técnico:</label>
-                            <Field v-model="rating.technicalSection" id="rTechnicalSection" name="technicalSection" type="number" min="1" max="100" class="bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 w-14 rounded-md text-center"></Field>
-                        </div>
-                        <p class="text-red-500 text-sm">
-                            <ErrorMessage name="technicalSection"></ErrorMessage>
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-1 items-start xl:items-center">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <label for="rArt" class="font-bold text-gray-400">Arte:</label>
-                            <Field v-model="rating.art" id="rArt" name="art" type="number" min="1" max="100" class="bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 w-14 rounded-md text-center"></Field>
-                        </div>
-                        <p class="text-red-500 text-sm">
-                            <ErrorMessage name="art"></ErrorMessage>
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-1 items-start xl:items-center">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <label for="rSound" class="font-bold text-gray-400">Sonido:</label>
-                            <Field v-model="rating.sound" id="rSound" name="sound" type="number" min="1" max="100"  class="bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 w-14 rounded-md text-center"></Field>
-                        </div>
-                        <p class="text-red-500 text-sm">
-                            <ErrorMessage name="sound"></ErrorMessage>
-                        </p>
-                    </div>
-                </div>
-                <div class="flex flex-col gap-1 items-center">
-                    <Field v-model="reviewText" as="textarea" name="content" cols="50" rows="4" class="bg-dark-surface text-gray-400 font-normal w-full h-36 p-5"></Field>
-                    <p class="text-red-500 text-sm">
-                            <ErrorMessage name="content"></ErrorMessage>
-                    </p>
-                </div>
-
-                <div class="flex justify-center">
-                    <button class="bg-neon-blue px-6 py-1 rounded-lg font-semibold text-xl" type="submit">{{ formMode === 'create' ? 'Publicar reseña' : 'Actualizar reseña' }}</button>
-                </div>
-                    
-            </Form> -->
 
             <!-- contenedor reseñas -->
             <div class="flex flex-col gap-2 ">
@@ -606,10 +558,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- <button v-if="review.user._id === userStore.userId" @click="handleClickUpdateReviewButton(review)" class="flex flex-row items-center gap-1 px-3 py-1 rounded-md border-[1px] border-neon-blue bg-neon-blue/10 ">
-                            <v-icon name="oi-pencil" scale="1" class="text-neon-blue drop-shadow-[1px_1px_0px_rgba(0,0,0,0.8)]"/>
-                            <span class="font-bold text-xs text-neon-blue drop-shadow-[1px_1px_0px_rgba(0,0,0,0.8)]">Modificar reseña</span>
-                        </button> -->
                     </div>
                 </div>
             </div>
@@ -824,7 +772,7 @@
             <!-- contenedor reseñas -->
             <div class="flex flex-col gap-2 ">
                 <!-- reseña -->
-                <div v-for="review in reviews" :id="`r-${review._id}`" class="flex flex-col p-6 gap-2 rounded-2xl border-[1px] border-neon-blue/30 bg-dark-surface">
+                <div v-for="(review, index) in reviews" :id="`r-${review._id}`" class="flex flex-col p-6 gap-2 rounded-2xl border-[1px] border-neon-blue/30 bg-dark-surface">
                     <!-- encabezado reseña -->
                     <div class="flex flex-col sm:flex-row justify-between">
                         <!-- usuario -->
@@ -868,7 +816,8 @@
                         </div>
                     </div>
                     <!-- body reseá -->
-                    <p v-html="review.content" class="p-2 font-medium text-base text-gray-200"></p>
+                    <p v-if="review.isModerated" class="p-7 text-base font-medium text-gray-400 italic">Contenido moderado</p>
+                    <p v-else v-html="review.content" class="p-2 font-medium text-base text-gray-200"></p>
                     <!-- footer reseña -->
                     <div class="flex flex-row justify-between items-center">
                         <div class="flex flex-col gap-1 px-2 text-gray-400">
@@ -883,6 +832,28 @@
                                     <p class="font-semibold text-xs">No (<span>{{ review.negativeVotes }}</span>)</p>
                                 </button>
                                 <button v-if="review.user._id !== userStore.userId" @click="handleReportButton(review._id)" class="text-base hover:underline hover:bg-neon-blue/30 p-1 rounded-md">Reportar</button>
+                                
+                                <button v-if="userStore.isModOrAdmin && !review.isModerated" @click="handleModerateButton(review._id)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Moderar</button>
+
+                                <Form v-if="moderatingReviewId === review._id" @submit="(values)=>handleModerate(values,review._id, index)" v-bind:validation-schema="moderationSchema" class="flex flex-row gap-2 items-center">
+                                    <div class="flex flex-col gap-2 ">
+                                        <div class="w-full flex gap-2">
+                                            <label for="rReason" class="font-bold text-gray-400">Motivo:</label>
+                                            <Field id="rReason" name="reason" as="select" class="text-black">
+                                                <option value="">Seleccionar motivo</option>
+                                                <option value="Ofensivo">Ofensivo</option>
+                                                <option value="Spam">Spam</option>
+                                                <option value="Fuera de tema">Fuera de tema</option>
+                                                <option value="Lenguaje inapropiado">Lenguaje inapropiado</option>
+                                            </Field>                  
+                                        </div>          
+                                    </div>
+                                    <p class="text-red-500 text-sm text-center">
+                                            <ErrorMessage name="reason"></ErrorMessage>
+                                        </p>
+                                    <button type="submit" class="p-1 underline text-gray-400 hover:text-neon-blue">Confirmar</button>
+                                </Form>
+
                             </div>
                         </div>
                         <button v-if="review.user._id === userStore.userId" @click="handleClickUpdateReviewButton(review)" class="flex flex-row items-center gap-1 px-3 py-1 rounded-md border-[1px] border-neon-blue bg-neon-blue/10 ">

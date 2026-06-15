@@ -11,7 +11,10 @@ const createThread = async (req, res,next) => {
 
         const thread = await threadService.createThread(body, req.uid);
 
-        return res.status(201).json({thread})
+        return res.status(201).json({
+            msg: 'Hilo creado con éxito',
+            createdThread: thread
+        })
 
     }catch(error){
         next(error)

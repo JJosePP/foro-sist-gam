@@ -1,16 +1,13 @@
 import { normalizeName } from "../utils/namedEntitySchema.js"
 import quizModel from "../models/Quiz.model.js"
 import { apiErrors } from "../utils/apiErrors.js";
-import badgeService from "./Badge.service.js";
+
 import { deleteImage, uploadImage } from "../utils/cloudinary.js";
 import fs from 'fs-extra';
 import userService from "./User.service.js";
 
 const createQuiz = async (data, file) => {
-    // const isUsed = await badgeService.badgebelongsToQuiz()
-    // if(isUsed){
-    //     throw apiErrors.badgeInUse;
-    // }
+
     let uploadedImage = null;
     try {
         let normalizedBadgeName = normalizeName(data.badge.name);
@@ -27,7 +24,7 @@ const createQuiz = async (data, file) => {
             secure_url: result.secure_url
         }
         await fs.unlink(file.path)
-        // await badgeService.asociateBadgeToQuiz(data.badge, quiz._id);
+
         return await quiz.save();
     } catch (error) {
         if(uploadedImage){
@@ -134,7 +131,7 @@ const deleteQuiz = async (quizId) => {
         throw apiErrors.quizNotFound;
     };
 
-    // await badgeService.deleteBadge(quiz.badge, quiz._id)
+
     await quiz.deleteOne();
     await deleteImage(quiz.badge.image.public_id)
     await userService.removeQuizFromUsers(quiz._id)

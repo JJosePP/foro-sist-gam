@@ -100,10 +100,7 @@
         <ul class="flex flex-col  max-h-[560px] rounded-b-md divide-y divide-neon-blue/30 bg-dark-surface border-[1px] border-neon-blue/30 overflow-y-scroll">
             <li v-for="tag in tags"  class="py-2 px-20 flex flex-row justify-between items-center">
                 <p class="font-semibold text-lg text-gray-200">{{tag.name}}</p>
-                <!-- <div class="flex flex-row gap-3">
-                    <v-icon name="oi-pencil" scale="1.3" class="text-neon-blue"/>
-                    <v-icon name="md-delete-outlined" scale="1.3" class="text-red-950"/>
-                </div> -->
+
                 <button type="button" @click="deleteTag(tag._id)">
                     <v-icon name="md-delete-outlined" scale="1.3" class="text-red-950"/>
                 </button>

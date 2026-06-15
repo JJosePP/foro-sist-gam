@@ -3,7 +3,6 @@ import HomeView from "../views/homeView.vue";
 import { useUserStore } from "../stores/userStore.js";
 import { useToastStore } from "../stores/toastStore.js";
 import profileView from "../views/profileView.vue";
-import editProfileView from "../views/editProfileView.vue";
 import gamesView from "../views/gamesView.vue";
 import gameInfoView from "../views/gameInfoView.vue"
 import forumView from "../views/categoriesView.vue"
@@ -12,6 +11,7 @@ import threadView from "../views/threadView.vue"
 import quizzesView from "../views/quizzesView.vue"
 import quizView from "../views/quizView.vue"
 import adminView from "@/views/adminView.vue";
+import reportsView from '../views/reportsView.vue';
 
 const routes = [
     {
@@ -48,14 +48,6 @@ const routes = [
                 name: 'profile',
                 meta: {
                     auth: true,
-                }
-            },
-            {
-                path: "users/:userId/edit",
-                component: editProfileView,
-                name: 'editProfile',
-                meta: {
-                    auth: true
                 }
             },
             {
@@ -101,6 +93,11 @@ const routes = [
                 meta: {
                     auth: true,
                 }
+            },
+            {
+                path: 'reports',
+                component: reportsView,
+                name: 'reports'
             },
             {
                 path:'/:pathName(.*)',

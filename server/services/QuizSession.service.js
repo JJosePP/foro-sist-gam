@@ -3,7 +3,7 @@ import questionService from "./Question.service.js";
 import quizSessionModel from "../models/QuizSession.model.js";
 import { apiErrors } from "../utils/apiErrors.js";
 import userService from "./User.service.js";
-import badgeService from "./Badge.service.js";
+
 
 const createSession = async (quizId, uid) => {
     const QUIZ_DURATION = 15;
@@ -60,14 +60,7 @@ const answerQuestion = async(sesiondId, userAnswer) => {
 
         if(session.correctAnswers >= passingScore){
             session.passed = true;
-            // let quiz = await quizService.getQuiz(session.quiz);
 
-            // await Promise.all([
-            //     // userService.addBadgeToUser(quiz.badge._id,session.user),
-            //     // badgeService.insertUserToBadge(quiz.badge, session.user),
-            //     // quizService.addUserToWinners(session.quiz, session.user)
-            //     userService.markQuizAsCompleted(session.quiz, session.user)
-            // ]);
             await userService.markQuizAsCompleted(session.quiz, session.user)
         }
     }

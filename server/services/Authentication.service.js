@@ -4,7 +4,6 @@ import { uploadImage } from "../utils/cloudinary.js";
 import fs from 'fs-extra';
 import "dotenv/config";
 import { apiErrors } from "../utils/apiErrors.js";
-import badgeService from "./Badge.service.js";
 const register = async (body, file) => {
     let normalizedUserName = body.userName.toLowerCase()
     const existingUsers = await userModel.find({

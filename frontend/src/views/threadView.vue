@@ -25,7 +25,9 @@
     const currentPage = ref(1)
     const totalPages = ref(1)
     const isEditingThread = ref(false)
-
+    const moderationFormIsOpen = ref(false)
+    const moderatingPostId = ref(null)
+    const moderatingKindPost = ref(null)
     const visiblePages= computed(() => {
         const pages = [];
         const total = totalPages.value;
@@ -80,6 +82,11 @@
             .max(50, "El título no puede contener más de 50 caracteres")
             .min(5, "El título debe contener más de 5 caracteres")
     })
+
+    const moderationSchema = yup.object({
+        reason: yup.string().required('Debe elegir una opción')
+    })
+
     const getThread = async () => {
         try {
             const {data} = await api({
@@ -102,11 +109,11 @@
                 url:route.path + `/replies?page=${currentPage.value}`,
                 method: 'GET'
             })
-
+            console.log(data.result)
             replies.value = data.result;
             currentPage.value = data.currentPage;
             totalPages.value = data.totalPages;
-
+            console.log(replies.value)
             return replies
         } catch (error) {
             console.log("ERROR: ", error)
@@ -286,11 +293,78 @@
             toastStore.alert(error.response.data.details, 'error')
         }
     }
+
+    const findAndScrollToReview = async (replyId) => {
+        let page = 1;
+
+        while (true) {
+            const { data } = await api.get(
+                `${route.path}/replies?page=${page}`
+            );
+            replies.value = data.result;
+            await nextTick();
+            const el = document.getElementById(`r-${replyId}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+                break;
+            }
+
+            if (!data.hasNextPage) break;
+
+            page++;
+            currentPage.value = page
+        }
+    };
+
+    const handleModerateButton = (postId, kind) => {
+        // moderationFormIsOpen.value = true
+        // reportingPostId.value = postId
+        if (moderatingPostId.value === postId) {
+            moderatingPostId.value = null;
+            moderatingKindPost.value = null
+        } else {
+            moderatingPostId.value = postId;
+            moderatingKindPost.value = kind
+
+        }
+    }
+
+
+    const handleModerate = async (values, postId, index) => {
+        try {
+            const {data} = await api.put(`/posts/${postId}/moderate`,
+                {
+                    reason: values.reason
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + userStore.token
+                    }
+                }
+            )
+            if(moderatingKindPost.value === 'Thread'){
+                thread.value.isModerated = true
+            }else if(moderatingKindPost.value === 'Reply'){
+                replies.value[index].isModerated = true
+            }
+            await nextTick()
+            toastStore.alert(data.msg)
+        } catch (error) {
+            console.log("ERROR: ", error)
+            toastStore.alert(error.response.data.details, 'error')
+        }
+    }
+
+
     onMounted(async() => {
         try {
             await getThread()
             await getReplies()
-            console.log(thread.value)
+            console.log(route.path)
+            if(route.hash){
+                const replyId = route.hash.replace('#r-', '');
+                await findAndScrollToReview(replyId);
+            }
         } catch (error) {
             console.log("ERROR: ", error)
         }
@@ -357,6 +431,8 @@
                                 <p class="font-semibold text-xs">No (<span>{{ thread.negativeVotes }}</span>)</p>
                             </button>
                             <button v-if="thread.user?._id !== userStore.userId" @click="handleReportButton(thread._id, thread.kind)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Reportar</button>
+                            <button v-if="userStore.isModOrAdmin && !thread.isModerated" @click="handleModerateButton(thread._id, thread.kind)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Moderar</button>
+                            
                         </div>
                         <button v-if="thread.user?._id === userStore.userId && thread.status === 'Abierto'" @click="handleClickUpdateThreadButton(thread)" class="flex flex-row items-center gap-1 px-3 py-1 rounded-md border-[1px] border-neon-blue bg-neon-blue/10 ">
                             <v-icon name="oi-pencil" scale="1" class="text-neon-blue drop-shadow-[1px_1px_0px_rgba(0,0,0,0.8)]"/>
@@ -376,13 +452,7 @@
                         <button v-if="userStore.isModOrAdmin" @click="changeThreadStatus" class="text-gray-400">{{ thread.status === 'Abierto' ? 'Cerrar hilo' : 'Abrir hilo'}}</button>
                     </div>
                     <h1 class="font-bold text-4xl text-white">{{thread.title}}</h1>
-                    <!-- <Form v-bind:validation-schema="threadValidationSchema" @submit="editThread">
-                        <label for="t-title">Título</label>
-                        <Field v-model="title" id="t-title" name="title" type="text"></Field>
-                        <p class="text-red-500 text-sm text-center">
-                            <ErrorMessage name="title"></ErrorMessage>
-                        </p>
-                    </Form> -->
+
                     <div class="flex flex-row gap-2 font-medium text-sm text-gray-400">
                         <time :datetime="thread.createdAt">{{ formatRelativeDate(thread.createdAt) }}</time>
                         <span >•</span>
@@ -400,19 +470,9 @@
                     </div>
                     <!-- contenido -->
                     <div class="flex flex-col justify-between w-full divide-y divide-neon-blue/20">
-                        <!-- <Form v-if="isEditingThread" v-bind:validation-schema="threadValidationSchema" @submit="editThread" @invalid-submit="errorSubmit" class="flex flex-col rounded-md bg-dark-surface border-[1px] border-neon-blue/20">
-                            <Field v-model="content" name="content">
-                                <tiptap v-model="content" class="tiptap"/>
-                            </Field>
-                            <p class="text-red-500 text-sm text-center">
-                                <ErrorMessage name="content"></ErrorMessage>
-                            </p>
-                            <div class="flex justify-center p-2">
-                                <button type="submit" class="bg-neon-blue px-6 py-1 rounded-lg font-semibold text-xl">Publicar</button>
-                            </div>
-                        </Form>
-                        <p v-else v-html="thread.content" class="flex p-7 text-base font-medium text-gray-200 tiptap"></p> -->
-                        <p v-html="thread.content" class="flex p-7 text-base font-medium text-gray-200 tiptap"></p>
+
+                        <p v-if="thread.isModerated" class="p-7 text-base font-medium text-gray-400 italic">Contenido moderado</p>
+                        <p v-else v-html="thread.content" class="flex p-7 text-base font-medium text-gray-200 tiptap"></p>
                         <!-- footer -->
                         <div class="flex flex-row justify-between items-center px-7 py-2">
                             <div class="flex flex-row gap-2 text-gray-400">
@@ -425,6 +485,27 @@
                                     <p class="font-semibold text-xs">No (<span>{{ thread.negativeVotes }}</span>)</p>
                                 </button>
                                 <button v-if="thread.user?._id !== userStore.userId" @click="handleReportButton(thread._id, thread.kind)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Reportar</button>
+                                <button v-if="userStore.isModOrAdmin && !thread.isModerated" @click="handleModerateButton(thread._id, thread.kind)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Moderar</button>
+
+                                <Form v-if="moderatingPostId === thread._id" @submit="(values)=>handleModerate(values,thread._id)" v-bind:validation-schema="moderationSchema" class="flex flex-row gap-2 items-center">
+                                    <div class="flex flex-col gap-2 ">
+                                        <div class="w-full flex gap-2">
+                                            <label for="rReason" class="font-bold text-gray-400">Motivo:</label>
+                                            <Field id="rReason" name="reason" as="select" class="text-black">
+                                                <option value="">Seleccionar motivo</option>
+                                                <option value="Ofensivo">Ofensivo</option>
+                                                <option value="Spam">Spam</option>
+                                                <option value="Fuera de tema">Fuera de tema</option>
+                                                <option value="Lenguaje inapropiado">Lenguaje inapropiado</option>
+                                            </Field>                  
+                                        </div>          
+                                    </div>
+                                    <p class="text-red-500 text-sm text-center">
+                                            <ErrorMessage name="reason"></ErrorMessage>
+                                        </p>
+                                    <button type="submit" class="p-1 underline text-gray-400 hover:text-neon-blue">Confirmar</button>
+                                </Form>
+
                             </div>
                             <button v-if="thread.user?._id === userStore.userId && thread.status === 'Abierto'" @click="handleClickUpdateThreadButton(thread)" class="flex flex-row items-center gap-1 px-3 py-1 rounded-md border-[1px] border-neon-blue bg-neon-blue/10 ">
                                 <v-icon name="oi-pencil" scale="1" class="text-neon-blue drop-shadow-[1px_1px_0px_rgba(0,0,0,0.8)]"/>
@@ -448,6 +529,7 @@
                     <button class="bg-neon-blue px-6 py-1 rounded-lg font-semibold text-xl" type="submit">Enviar</button>
                 </div>
             </Form>
+            
         </div>
 
         <div class="flex justify-center">
@@ -495,7 +577,7 @@
             <!-- contenedor respuestas -->
             <div class="flex flex-col gap-5">
                 <!-- respuesta -->
-                <div v-for="reply in replies" class="flex flex-col rounded-2xl border-[1px] border-neon-blue/20 bg-dark-reply divide-x divide-neon-blue/20 overflow-hidden">
+                <div v-for="(reply, index) in replies" :id="`r-${reply._id}`" class="flex flex-col rounded-2xl border-[1px] border-neon-blue/20 bg-dark-reply divide-x divide-neon-blue/20 overflow-hidden">
                     <!-- user -->
                     <div class="flex flex-row divide-x divide-neon-blue/20 overflow-hidden">
 
@@ -507,7 +589,8 @@
                         </div>
                         <!-- contenido -->
                         <div class="flex flex-col w-full justify-between divide-y divide-neon-blue/20">
-                            <p v-html="reply.content" class="p-7 text-base font-medium text-gray-200 tiptap"></p>
+                            <p v-if="reply.isModerated" class="p-7 text-base font-medium text-gray-400 italic">Contenido moderado</p>
+                            <p v-else v-html="reply.content" class="p-7 text-base font-medium text-gray-200 tiptap"></p>
                             <!-- footer -->
                             <div class="flex flex-row justify-between items-center px-7 py-2">
                                 <div class="flex flex-row gap-2 text-gray-400">
@@ -520,6 +603,28 @@
                                         <p class="font-semibold text-xs">No (<span>{{ reply.negativeVotes }}</span>)</p>
                                     </button>
                                     <button v-if="reply.user?._id !== userStore.userId" @click="handleReportButton(reply._id, reply.kind)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Reportar</button>
+                                    <button v-if="userStore.isModOrAdmin && !reply.isModerated" @click="handleModerateButton(reply._id, reply.kind)" class="text-base hover:underline hover:bg-neon-blue/20 p-1 rounded-md">Moderar</button>
+
+                                    <Form v-if="moderatingPostId === reply._id" @submit="(values)=>handleModerate(values,reply._id, index)" v-bind:validation-schema="moderationSchema" class="flex flex-row gap-2 items-center">
+                                        <div class="flex flex-col gap-2 ">
+                                            <div class="w-full flex gap-2">
+                                                <label for="rReason" class="font-bold text-gray-400">Motivo:</label>
+                                                <Field id="rReason" name="reason" as="select" class="text-black">
+                                                    <option value="">Seleccionar motivo</option>
+                                                    <option value="Ofensivo">Ofensivo</option>
+                                                    <option value="Spam">Spam</option>
+                                                    <option value="Fuera de tema">Fuera de tema</option>
+                                                    <option value="Lenguaje inapropiado">Lenguaje inapropiado</option>
+                                                </Field>                  
+                                            </div>          
+                                        </div>
+                                        <p class="text-red-500 text-sm text-center">
+                                                <ErrorMessage name="reason"></ErrorMessage>
+                                            </p>
+                                        <button type="submit" class="p-1 underline text-gray-400 hover:text-neon-blue">Confirmar</button>
+                                    </Form>
+
+
                                 </div>
                                 <button v-if="reply.user?._id === userStore.userId && thread.status === 'Abierto'" @click="handleClickUpdateReply(reply)" class="flex flex-row items-center gap-1 px-3 py-1 rounded-md border-[1px] border-neon-blue bg-neon-blue/10 ">
                                     <v-icon name="oi-pencil" scale="1" class="text-neon-blue drop-shadow-[1px_1px_0px_rgba(0,0,0,0.8)]"/>

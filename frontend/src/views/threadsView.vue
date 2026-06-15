@@ -1,19 +1,40 @@
 <script setup>
     import SearchBar from '@/components/SearchBar.vue';
     import api from '@/boot/axios.js';
-    import { computed, onMounted, ref } from 'vue';
-    import { useRoute } from 'vue-router';
+    import { computed, nextTick, onMounted, ref } from 'vue';
+    import { useRoute, useRouter } from 'vue-router';
     import { useUserStore } from '../stores/userStore.js';
+    import { ErrorMessage, Field, Form } from 'vee-validate';
+    import tiptap from '../components/TipTap.vue'
+    import * as yup from 'yup';
+    import {useToastStore} from '../stores/toastStore.js'
 
     const searchTerm = ref('')
     const categoryInfo = ref({})
     const route = useRoute()
+    const router = useRouter()
     const currentPage = ref(1)
     const filter = ref('createdAt')
     const totalPages = ref(1)
     const threads = ref([])
     const userStore = useUserStore();
     const isLoading = ref(true)
+    const formIsOpen = ref(false)
+    const thread = ref({
+        title: null,
+        content: null,
+        category: null
+    })
+    const toastStore = useToastStore();
+
+
+    const threadValidationSchema = yup.object({
+        content: yup.string().required("La respuesta no puede quedar vacía")
+            .max(8000, "La reseña puede contener 8000 caracteres como máximo"),
+        title: yup.string().required("El título no puede quedar vacío")
+            .max(50, "El título no puede contener más de 50 caracteres")
+            .min(5, "El título debe contener más de 5 caracteres")
+    })
 
     const handleSearch = async (term) => {
         console.log(term)
@@ -102,6 +123,58 @@
         currentPage.value = page;
         await getThreads()
     }
+
+    const handleAddButton = async () => {
+        if(formIsOpen.value === true){
+            resetForm()
+        }
+        formIsOpen.value = true
+        await nextTick()
+        document.getElementById('form')?.scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    const resetForm = () => {
+        thread.value = {
+            title: null,
+            content: null,
+            category: null
+        }
+    }
+
+    const handleCancelButton = () => {
+        resetForm()
+        formIsOpen.value = false
+    }
+
+    const handleSubmit = async (values) => {
+        console.log(values)
+        console.log(categoryInfo.value._id)
+        try {
+            const {data} = await api.post('threads',
+                {
+                    title: values.title,
+                    content: values.content,
+                    category: categoryInfo.value._id
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + userStore.token
+                    }
+                }
+            )
+            
+            toastStore.alert(data.msg)
+
+            router.push({name: 'thread', params:{threadId: data.createdThread._id}})
+
+        } catch (error) {
+            console.log("ERROR: ", error)
+            toastStore.alert(error.response.data.details, 'error')
+        }
+    }
+
     onMounted(async() => {
         try {
             console.log('PARARM: ', route.params)
@@ -147,7 +220,7 @@
             <div><h2 class="font-bold sm:text-xl md:text-2xl text-white">Lista de hilos</h2></div>
             <!-- boton nuevo hilo + paginacion -->
             <div class="flex flex-row gap-2 ">
-                <button v-if="userStore.token" class="px-2 py-1 rounded-md font-bold text-base text-black bg-neon-blue">Nuevo hilo</button>
+                <button v-if="userStore.token" type="button" @click="handleAddButton" class="px-2 py-1 rounded-md font-bold text-base text-black bg-neon-blue">Nuevo hilo</button>
                 <div class="flex gap-0.5 pe-5">
                     <button v-for="page in visiblePages"
                         :key="page + Math.random()"
@@ -190,6 +263,33 @@
             </div>
         </div>
         
+        <div v-if="formIsOpen" >
+            <Form id="form" @submit="handleSubmit" v-bind:validationSchema="threadValidationSchema" class="flex flex-col p-3 gap-2 rounded-md border-[1px] border-neon-blue/30 bg-dark-surface">
+                <div class="flex flex-col gap-2">
+                    <div class="w-full flex gap-2">
+                        <label for="tTitle" class="font-bold text-gray-400"> Título:</label>
+                        <Field v-model="thread.title" id="tTitle" name="title" type="text" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                    </div>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="title"></ErrorMessage>       
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <Field v-model="thread.content" name="content">
+                        <tiptap v-model="thread.content" class="tiptap"/>
+                    </Field>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="content"></ErrorMessage>
+                    </p>
+                </div>
+
+                <div class="flex flex-row justify-center gap-3">
+                    <button type="submit" class="px-4 py-1 bg-neon-blue rounded-md font-semibold">Crear</button>
+                    <button type="button" @click="handleCancelButton" class="px-4 py-1 rounded-md font-semibold text-white hover:bg-red-950/30">Cancelar</button>
+                </div>
+            </Form>
+        </div>
 
     </div>
 

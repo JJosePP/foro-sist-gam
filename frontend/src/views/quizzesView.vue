@@ -108,18 +108,6 @@
         </div>
 
         <div class="flex flex-row justify-end px-2 py-4 items-center">
-            <!-- <div v-if="isLoading" class="flex flex-row gap-2">
-                <button class="px-2 py-1 rounded-md font-semibold text-base text-gray-200 bg-dark-surface hover:bg-neon-blue">
-                    <div class="w-14 h-4 rounded-md bg-gray-700"></div>
-                </button>
-                <button class="px-2 py-1 rounded-md font-semibold text-base text-gray-200 bg-dark-surface hover:bg-neon-blue">
-                    <div class="w-14 h-4 rounded-md bg-gray-700"></div>
-                </button>
-            </div>
-            <div v-else class="flex flex-row gap-2">
-                <button class="px-2 py-1 rounded-md font-semibold text-base text-gray-200 bg-dark-surface hover:bg-neon-blue">Todos</button>
-                <button class="px-2 py-1 rounded-md font-semibold text-base text-gray-200 bg-dark-surface hover:bg-neon-blue">Completados</button>
-            </div> -->
 
             <div>
                 <div class="flex gap-0.5 pe-5">

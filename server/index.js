@@ -3,7 +3,6 @@ import connectDB from "./config/db.js";
 import morgan from "morgan";
 import quizModel from "./models/Quiz.model.js"
 import userModel from './models/User.model.js'
-import badgeModel from './models/Badge.model.js'
 import invalidTokenModel from "./models/invalidTokens.model.js";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
@@ -26,7 +25,7 @@ import reviewRoutes from "./routes/Review.routes.js"
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { cleanUpUploads } from "./middlewares/cleanUpUploads.js";
 import questionRoutes from "./routes/Question.routes.js";
-import badgeRoutes from './routes/Badge.routes.js';
+
 import quizRoutes from './routes/Quiz.routes.js';
 // import populateRoutes from './routes/RoutesToPopulate.js'
 import postRoutes from './routes/Post.routes.js'
@@ -40,10 +39,8 @@ const __filename = fileURLToPath(import.meta.url); // get the resolved path to t
 const __dirname = path.dirname(__filename); // get the name of the directory
 
 // middlewares
-console.log("LISTA BLANCA: ", whiteList)
 app.use(cors({
     origin: function(origin, callback){
-        console.log("ORIGEN: ", origin)
         if(!origin || whiteList.includes(origin)){
             return callback(null, origin)
         }
@@ -72,7 +69,6 @@ app.use("/api/v1/replies", replyRoutes)
 app.use('/api/v1/tags', tagRoutes)
 app.use('/api/v1/reviews', reviewRoutes)
 app.use('/api/v1/questions', questionRoutes)
-// app.use('/api/v1/badges', badgeRoutes)
 app.use('/api/v1/quizzes', quizRoutes)
 app.use('/api/v1/posts', postRoutes)
 app.use('/api/v1/reports', reportRoutes)

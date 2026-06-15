@@ -10,7 +10,7 @@
   const threadsData = ref([]);
   const gamesData = ref([]);
   const isLoading = ref(true)
-  // const MIN_SKELETON_TIME = 500
+ 
   const getNewestThreads = async () => {
     try {
       const {data} = await api({
@@ -48,12 +48,7 @@
       console.log(error)
     } finally {
       isLoading.value = false
-      // const elapsed = Date.now() - start
-      // const remaining = MIN_SKELETON_TIME - elapsed
 
-      // setTimeout(() => {
-      //   isLoading.value = false
-      // }, Math.max(0, remaining))
     }
   })
 </script>

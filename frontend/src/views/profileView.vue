@@ -1,14 +1,23 @@
 <script setup>
-    import {RouterLink, useRoute} from 'vue-router'
+    import {RouterLink, useRoute, useRouter} from 'vue-router'
     import { useUserStore } from '../stores/userStore.js'
     import api from '@/boot/axios.js';
-    import { ref, onMounted, onBeforeMount, h, watch, computed } from 'vue';
+    import { ref, onMounted, computed, nextTick } from 'vue';
+    import { ErrorMessage, Field, Form } from 'vee-validate';
+    import {useToastStore} from '../stores/toastStore.js'
+    import * as yup from 'yup';
+    import YupPassword from 'yup-password'
 
+    YupPassword(yup)
+
+    const formIsOpen = ref(false)
+    const passFormIsOpen = ref(false)
     const route = useRoute()
+    const router = useRouter()
     const userStore = useUserStore()
+    const toastStore = useToastStore();
     const userData = ref({})
     const isLoading = ref(true)
-    // const MIN_SKELETON_TIME = 500
     const formattedDate = computed(() => {
         return new Date(userData.value.createdAt).toLocaleDateString()
     })
@@ -19,8 +28,57 @@
         return userData.value.completedQuizzes?.length ?? 0
     })
     const numQuizzes = ref(0);
+
+    const user = ref({
+        userName: null,
+        name: null,
+        lastName: null,
+        email: null,
+        description: null,
+        profilePic: {
+            secure_url: null
+        }
+    })
+    const selectedFile = ref(null)
+
+    const validationSchema = yup.object({
+        userName: yup.string().required("Debe escribir un nombre de usuario")
+            .min(2, "El nombre de usuario debe tener como mínimo 2 carácter")
+            .max(20, "El nombre de usuario debe tener como máximo 20 caracteres"),
+        name: yup.string().required("Debe escribir su nombre")
+            .min(2, "El nombre debe tener como mínimo 2 carácter")
+            .max(20, "El nombre debe tener como máximo 20 caracteres"),
+        lastName: yup.string().required("Debe escribir el apellido")
+            .min(2, "El apellido debe tener como mínimo 2 carácter")
+            .max(30, "El apellido debe tener como máximo 30 caracteres"),
+        email: yup.string().required("Debe escribir una desarrolladora")
+            .email("Debe proporcionar un correo válido"),
+        description: yup.string().optional().nullable()
+            .max(500, "La descripción puede tener 500 caracteres como máximo"),
+        profilePic: yup.mixed()
+            .test('fileType', 'Solo se permiten imágenes',
+                (file) => {
+                    if(file && !file?.type.startsWith("image/")){
+                        return false
+                    }
+                    return true
+                }
+            )
+    })
+
+    const passwordValidationSchema = yup.object({
+        password: yup.string()
+        .min(8, "La contraseña debe tener mínimo 8 caracteres")
+        .minLowercase(1, "La contraseña debe tener al menos 1 letra minúscula")
+        .minUppercase(1, "La contraseña debe tener al menos 1 letra mayúscula")
+        .minNumbers(1, "La contraseña debe tener al menos 1 número")
+        .minSymbols(1, "La contraseña debe tener al menos 1 carácter especial")
+        .required("La contraseña es necesaria"),
+        confirmPassword: yup.string().oneOf([yup.ref("password"), null], "Las contraseñas deben coincidir"),
+    })
+
+
     const getData = async () =>{ 
-        // const start = Date.now()
         try {
             const {data} = await api({
                 url: route.path,
@@ -35,18 +93,10 @@
             return userData
         } catch (error) {
             console.log("ERROR: ", error)
-        }// } finally{
-        //     // isLoading.value = false
-        //     const elapsed = Date.now() - start
-        //     const remaining = MIN_SKELETON_TIME - elapsed
-
-        //     setTimeout(() => {
-        //         isLoading.value = false
-        //     }, Math.max(0, remaining))
-        // }
+        }
     }
 
-    //hacer endpoint en back, y hacer funcion aqui para llamar endpoint
+
     const getUserPosts = async () => {
         try{
             const {data} = await api({
@@ -77,37 +127,138 @@
             console.log('ERROR: ', error)
         }
     }
-    // const recentPosts = [
-    //     {
-    //         id: "fkofek",
-    //         kind: "Review",
-    //         game: {
-    //             id:"fijeifje",
-    //             name:"Elden RIng"
-    //         }
-    //     },
-    //     {
-    //         id:"DJKIEFJIE",
-    //         kind: "Thread",
-    //         title: "KDOWKD"
-    //     },
-    //     {
-    //         id: "IJEFIEde",
-    //         kind: "Reply",
-    //         thread: {
-    //             id:"OKDOE",
-    //             title:"efiei"
-    //         }
-    //     }
-    // ]
+    const resetForm = () => {
+        user.value = {
+            userName: null,
+            name: null,
+            lastName: null,
+            email: null,
+            description: null,
+            profilePic: {
+                secure_url: null
+            }
+        }
+        selectedFile.value = null
+    }
+    const handleCancelButton = () => {
+        formIsOpen.value = false
+        resetForm()
+    }
+
+    const handleEditButton = () => {
+        formIsOpen.value = true;
+        user.value = {
+            userName: userData.value.userName,
+            name: userData.value.name,
+            lastName: userData.value.lastName,
+            email: userData.value.email,
+            description: userData.value.description,
+            profilePic: {
+                secure_url: userData.value.profilePic.secure_url
+            }
+        }
+    }
+
+    const handleFile = (event) => {
+        selectedFile.value = event.target.files[0];
+        let output = document.getElementById('output');
+        output.src = URL.createObjectURL(selectedFile.value);
+        output.onload = function () {
+            URL.revokeObjectURL(output.src)
+        }
+    }
+
+    const handleSubmit = async (values) => {
+        try {
+            const formData = new FormData();
+            formData.append('userName', values.userName);
+            formData.append('name', values.name)
+            formData.append('lastName', values.lastName)
+            formData.append('email', values.email)
+            formData.append('description', values.description)
+            if(selectedFile.value){
+                formData.append('image', selectedFile.value)
+            }
+            const {data} = await api.put(route.path,
+                formData,
+                {
+                    headers: {
+                        Authorization: "Bearer " + userStore.token
+                    }
+                }
+            )
+
+            userData.value = {...userData.value, ...data.editedProfile}
+            toastStore.alert(data.msg)
+            console.log(userData.value)
+            await nextTick()
+        } catch (error) {
+            console.log("ERROR: ", error)
+            toastStore.alert(error.response.data.details, 'error')
+        }finally{
+            formIsOpen.value = false;
+            resetForm()
+            userStore.setProfilePic(userData.value.profilePic.secure_url)
+        }
+    }
+
+    const handleRemoveButton = async () => {
+        try {
+            if(confirm('¿Está seguro de eliminar la cuenta permanentemente? Si inicia sesión antes de 30 días se cancelará la eliminación de la cuenta')){
+                const {data} = await api({
+                    url: route.path,
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: "Bearer " + userStore.token
+                    }
+                })
+                toastStore.alert(data.message)
+                await userStore.logout()
+
+
+                router.push('/')
+            }else{
+                return
+            }
+        } catch (error) {
+            console.log("ERROR: ", error)
+            toastStore.alert(error.response.data.details, 'error')
+        }
+    }
+
+    const handleCancelPassButton = () => {
+        passFormIsOpen.value = false
+    }
+
+    const changePassword = async (values) => {
+        try {
+            const {data} = await api.patch(`users/changePassword/${userStore.userId}`,
+                {
+                    password: values.password,
+                    confirmPassword: values.confirmPassword
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + userStore.token
+                    }
+                }
+            )
+
+            toastStore.alert(data.message)
+            await userStore.logout()
+            router.push('/')
+            
+        } catch (error) {
+            console.log("ERROR: ", error)
+            toastStore.alert(error.response.data.details, 'error')
+        }
+    }
     //Esto es más optimo pero para aplicaciones pequeñas no se nota tanto y se debe hacer para todos las views que busquen datos. 
     // O se puede hacer tb lo que tengo en app.vue (routerlink key) que es menos optimo. Lo que hace es destruir el componente y volverlo a crear cada vez que cambia la key
     // watch(() => route.params.userId, async () => {
     //     await getData()
     // })
     onMounted(async () => {
-        
-        const start = Date.now()
         try {
             await getData()
             await getUserPosts()
@@ -116,43 +267,8 @@
             console.log(error)
         } finally {
             isLoading.value = false
-            // const elapsed = Date.now() - start
-            // const remaining = MIN_SKELETON_TIME - elapsed
-
-            // setTimeout(() => {
-            //     isLoading.value = false
-            // }, Math.max(0, remaining))
         }
     })
-    // const getData2 = () => {
-    //     api({
-    //         url: "/profile",
-    //         method: "GET",
-    //         headers:{ 
-    //             Authorization: "Bearer " + userStore.token,
-    //         }
-    //     }).then(res => {
-    //         userData.value = res.data.user
-    //         console.log(userData.value)
-    //     })
-    // }
-
-
-    // onMounted(async () => {
-    //     //userData.value = await getData()
-    //     getData2()
-    //     //console.log(userData.value.userName)
-    // })
-    // onBeforeMount(async () => {
-    //     userData.value = await getData()
-    //     console.log(userData.value.userName)
-    // })
-    // console.log(userStore.user.toLowerCase() == route.params.username.toLowerCase())
-    // console.log(userStore.user.toLocaleLowerCase())
-    // console.log(userStore.user)
-    // console.log(localStorage.getItem("user"))
-    // console.log(route.params.username)
-    //console.log(userData.value.userName)
 </script>
 
 <template>
@@ -180,11 +296,13 @@
                     </div>
 
                     <!-- BOTON EDITAR -->
-                    <RouterLink v-if="isActiveUserProfile" v-bind:to="{name: 'editProfile', params: {userId: userData.userId}}" class="flex flex-row gap-1 sm:gap-2 p-2 sm:p-3 justify-center items-center rounded-2xl bg-neon-blue">
+                    <div v-if="isActiveUserProfile" class="flex flex-row gap-1 sm:gap-2 p-2 sm:p-3 justify-center items-center rounded-2xl bg-neon-blue">
                         <v-icon name="oi-pencil" scale="1.3"/>
                         <!-- <h2 class="text-2xl font-semibold font-rajdhani">Editar perfil</h2> -->
                         <span class="text-lg sm:text-2xl font-semibold">Editar perfil</span>
-                    </RouterLink>
+                    </div>
+                    <div v-if="isActiveUserProfile" class="text-red-600/70 hover:underline">Eliminar cuenta</div>
+                    
                 </div>
                 <!-- ESTADISTICAS -->
                 <div class="flex flex-col gap-2 p-5 bg-dark-surface border-[1px] rounded-2xl border-neon-blue/30">
@@ -259,25 +377,17 @@
     </div>
     <div v-else class="max-w-[80%] mx-auto">
         <!-- Frame64 -->
-        <div class=" grid grid-cols-1 lg:grid-cols-[0.5fr_1fr] gap-3 lg:gap-0">
+        <div v-if="!formIsOpen" class=" grid grid-cols-1 lg:grid-cols-[0.5fr_1fr] gap-3 lg:gap-0">
             <!-- Frame66 -->
             <div class="flex flex-col col-span-1 row-span-1 px-4 lg:px-12 gap-3 w-full "> 
                 <!-- Frame71 PERFIL-->
                 <div class="flex flex-col items-center gap-[10px] py-[25px] px-[25px] bg-dark-surface border-[1px] rounded-2xl border-neon-blue/30">
                     <!-- Perfil -->
                     <div class="flex flex-col w-32 h-32 sm:w-48 sm:h-48 lg:w-[215px] lg:h-[215px] drop-shadow-[0_15px_30px_rgba(0,212,255,0.6)]">
-                        <!-- <div v-if="isLoading" class="animate-pulse">
-                            <div class="md:w-[215px] md:h-[215px] bg-gray-700"></div>
-                        </div>
-                        <div v-else>
-                            <img v-if="userData.profilePic" v-bind:src="userData.profilePic.secure_url" class="md:w-[215px] md:h-[215px] object-cover">
-                        </div> -->
+
                         <img v-if="userData.profilePic" v-bind:src="userData.profilePic.secure_url" class="w-full h-full rounded-full border-2 border-neon-blue object-cover">
                     </div>
-                    <!-- <div class="bg-indigo-300 text-center">
-                        <h1 class="font-bold text-4xl text-white drop-shadow-[0_0_8px_rgba(0,212,255,0.6)]">{{userData.userName}}</h1>
-                        <p class="text-gray-400 text-sm"><v-icon name="bi-calendar4" scale="1"/>Miembro desde<time>12/02/2025</time></p>
-                    </div> -->
+
 
                     <!-- NOMBRE + FECHA -->
                     <div class="flex flex-col text-center w-full p-2 gap-2 overflow-hidden">
@@ -289,11 +399,43 @@
                     </div>
 
                     <!-- BOTON EDITAR -->
-                    <RouterLink v-if="isActiveUserProfile" v-bind:to="{name: 'editProfile', params: {userId: userData.userId}}" class="flex flex-row gap-1 sm:gap-2 p-2 sm:p-3 justify-center items-center rounded-2xl bg-neon-blue">
+
+                    <button v-if="isActiveUserProfile" type="button" @click="handleEditButton" class="flex flex-row gap-1 sm:gap-2 p-2 sm:p-3 justify-center items-center rounded-2xl bg-neon-blue">
                         <v-icon name="oi-pencil" scale="1.3"/>
                         <!-- <h2 class="text-2xl font-semibold font-rajdhani">Editar perfil</h2> -->
                         <span class="text-lg sm:text-2xl font-semibold">Editar perfil</span>
-                    </RouterLink>
+                    </button>
+
+                    <button v-if="isActiveUserProfile && !passFormIsOpen" type="button" @click="passFormIsOpen = true" class="text-gray-200 hover:text-neon-blue/70 hover:underline">Cambiar contraseña</button>
+
+                    <button v-if="isActiveUserProfile && !passFormIsOpen" type="button" @click="handleRemoveButton" class="text-gray-200 hover:text-red-600/70 hover:underline">Eliminar cuenta</button>
+
+                    <Form v-if="passFormIsOpen" @submit="changePassword" v-bind:validation-schema="passwordValidationSchema" class="flex flex-col p-2 gap-1">
+                        <div class="flex flex-col gap-2">
+                            <div class="w-full flex gap-2">
+                                <label for="uPassword" class="font-bold text-gray-400 shrink-0"> Nueva contraseña:</label>
+                                <Field id="uPassword" name="password" type="password" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                            </div>
+                            <p class="text-red-500 text-sm text-center">
+                                <ErrorMessage name="password"></ErrorMessage>       
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <div class="w-full flex gap-2">
+                                <label for="uConfirmPassword" class="font-bold text-gray-400 shrink-0"> Confirmar contraseña:</label>
+                                <Field id="uConfirmPassword" name="confirmPassword" type="password" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                            </div>
+                            <p class="text-red-500 text-sm text-center">
+                                <ErrorMessage name="confirmPassword"></ErrorMessage>       
+                            </p>
+                        </div>
+
+                        <div class="flex flex-row justify-center gap-3">
+                            <button type="submit" class="px-4 py-1 bg-neon-blue rounded-md font-semibold">Cambiar</button>
+                            <button type="button" @click="handleCancelPassButton" class="px-4 py-1 rounded-md font-semibold text-white hover:bg-red-950/30">Cancelar</button>
+                        </div>
+                    </Form>
                 </div>
                 <!-- ESTADISTICAS -->
                 <div class="flex flex-col gap-2 p-5 bg-dark-surface border-[1px] rounded-2xl border-neon-blue/30">
@@ -302,22 +444,11 @@
                         <v-icon name="md-barchart" scale="1.2" flip="horizontal"/>
                         <h2 class="font-bold text-base sm:text-xl text-white">ESTADISTICAS</h2>
                     </div>
-                    <!-- valores estadisticas -->
-                    <!-- <div class="bg-blue-300 flex flex-col md:flex-row px-6 gap-6 justify-center">
-                        <div class="flex flex-col py-4 px-8 items-center bg-orange-400">
-                            <div>100</div>
-                            <h3>POSTS</h3>
-                        </div>
-                        <div class="bg-green-500 flex flex-col py-4 px-8 items-center">
-                            <div>2</div>
-                            <h3>INSIGNIAS</h3>
-                        </div>
-                    </div> -->
 
                     <!-- HACER ENDPOINTS PARA ESTADISTICAS -->
                     <div class="grid grid-cols-1 md:grid-cols-2 px-6 gap-6">
                         <div class="flex flex-col py-4 px-8 items-center rounded-2xl bg-dark-base">
-                            <h2 class="font-bold text-2xl sm:text-4xl text-white">{{userData.stats.totalPosts}}</h2>
+                            <h2 class="font-bold text-2xl sm:text-4xl text-white">{{userData?.stats?.totalPosts}}</h2>
                             <h3 class="font-medium text-base sm:text-xl text-gray-400">POSTS</h3>
                         </div>
                         <div class="flex flex-col py-4 px-8 items-center rounded-2xl bg-dark-base">
@@ -360,7 +491,7 @@
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <template v-for="post of userData.stats.recentPosts">
+                        <template v-for="post of userData?.stats?.recentPosts">
                             <div class="flex gap-2 p-2 items-center font-medium text-sm sm:text-base text-gray-400">
                                 <v-icon name="md-comment" scale="0.8" class="text-neon-blue" flip="horizontal"/>
                                 <span v-if="post.kind === 'Review'">Escribió una reseña de: <RouterLink v-bind:to="{name: 'gameInfo', params: {gameId: post.game._id}}" class="text-neon-blue hover:underline">{{ post.game.name }}</RouterLink></span>
@@ -373,6 +504,89 @@
             </div>
         </div>
         
+        <div v-if="formIsOpen" class="w-1/2 mx-auto flex flex-col items-center gap-2">
+            <button type="button" @click="handleCancelButton" class="flex flex-row gap-1 sm:gap-2 p-2 sm:p-3 justify-center items-center rounded-2xl bg-neon-blue">Cancelar</button>
+            <!-- <component :is="editProfileView" :user="userData"></component> -->
+
+            <Form :validation-schema="validationSchema" @submit="handleSubmit" class="flex flex-col gap-2 p-5 bg-dark-surface rounded-md border-[1px] border-neon-blue/30">
+                <div class="flex flex-col gap-2">
+                    <div class="w-full flex gap-2">
+                        <label for="userName" class="font-bold text-gray-400 shrink-0"> Nombre de usuario:</label>
+                        <Field v-model="user.userName" id="userName" name="userName" type="text" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                    </div>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="userName"></ErrorMessage>       
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <div class="w-full flex gap-2">
+                        <label for="name" class="font-bold text-gray-400"> Nombre:</label>
+                        <Field v-model="user.name" id="name" name="name" type="text" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                    </div>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="name"></ErrorMessage>       
+                    </p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <div class="w-full flex gap-2">
+                        <label for="lastName" class="font-bold text-gray-400"> Apellidos:</label>
+                        <Field v-model="user.lastName" id="lastName" name="lastName" type="text" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                    </div>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="lastName"></ErrorMessage>       
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <div class="w-full flex gap-2">
+                        <label for="email" class="font-bold text-gray-400 shrink-0"> Correo electrónico:</label>
+                        <Field v-model="user.email" id="email" name="email" type="text" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                    </div>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="email"></ErrorMessage>       
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <div class="w-full flex gap-2">
+                        <label for="description" class="font-bold text-gray-400"> Descripción:</label>
+                        <Field v-model="user.description" id="description" name="description" as="textarea" cols="50" rows="4" class="w-full bg-dark-base text-gray-400 border-[1px] border-neon-blue/30 rounded-md px-2"></Field>
+                    </div>
+                    <p class="text-red-500 text-sm text-center">
+                        <ErrorMessage name="description"></ErrorMessage>       
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-5">
+                        <label class="font-bold text-gray-400 shrink-0">Imagen de perfil:</label>
+                        <label for="uImage" class="flex custom-file-upload py-1 px-4 rounded-md bg-neon-blue/50">
+                            <v-icon name="fa-cloud-upload-alt"/>
+                            Elegir imagen
+                        </label>
+                        <Field id="uImage" name="profilePic" type="file" @change="handleFile" class="custom-file-upload"/>
+                        <!-- <Field v-else id="uImage" name="profilePic" type="file" @change="handleFile" class="custom-file-upload A"/> -->
+                    </div>
+                    <div class="flex flex-row justify-center">
+                        <div class="w-36 h-36 rounded-md shrink-0">
+                            <img v-if="user.profilePic.secure_url" id="output" :src="user.profilePic.secure_url" class="w-full h-full object-contain border-neon-blue/30 border-[1px] rounded-md">
+                            <img v-else id="output" class="w-full h-full border-neon-blue/30 border-[1px] rounded-md">
+                        </div>
+
+                    </div>
+                    <p class="text-red-500 text-sm text-center ">
+                        <ErrorMessage name="profilePic"></ErrorMessage>
+                    </p>
+                </div>
+
+                <div class="flex flex-row justify-center">
+                    <button type="submit" class="px-4 py-2 bg-neon-blue rounded-md font-semibold">Modificar</button>
+                </div>
+            </Form>
+
+        </div>
+
     </div>
 
 

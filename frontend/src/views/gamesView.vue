@@ -169,7 +169,6 @@
         </div>
 
         <!-- contenedor filtro+boton -->
-        <!-- <div v-show="filterIsOpen" class="flex flex-col gap-2 w-full text-white"> -->
             <!-- contenedor solo filtro -->
             <div v-show="filterIsOpen" class="flex flex-row text-white bg-dark-surface w-full rounded-2xl border-[1px] border-neon-blue/30 divide-x-[1px] divide-neon-blue/30">
                 <!-- Contenedo Generos -->
@@ -182,10 +181,7 @@
                                 <label class="label-text cursor-pointer flex flex-col text-sm font-medium" :for="`checkbox-${genre._id}`" >{{ genre.name }}</label>
                             </div>
                         </template>
-                        <!-- <div class="flex gap-2">
-                            <input type="checkbox" id="checkboxLabel"/>
-                            <label class="label-text cursor-pointer flex flex-col" for="checkboxLabel"></label>
-                        </div> -->
+ 
                     </div>
                 </div>
 
@@ -236,10 +232,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <div class="flex justify-center">
-                <button class="px-6 py-1 rounded-md font-semibold text-black text-xl bg-neon-blue" @click="applyFilter">Filtrar</button>
-            </div> -->
-        <!-- </div> -->
 
         <!-- Juegos -->
         <div class="text-white flex flex-col gap-5 md:gap-10">
@@ -254,9 +246,6 @@
                     </button>
                 </div>
                 <div v-else class="flex gap-0.5 pe-5">
-                    <!-- <template v-for="n in totalPages">
-                        <button class="font-bold">{{ n }}</button>
-                    </template> -->
                     <button v-for="page in visiblePages"
                         :key="page + Math.random()"
                         :disabled="page === '...'"
@@ -275,9 +264,6 @@
                 </template>
             </div>
             <div v-else class="flex flex-row grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:grid gap-10 overflow-x-auto p-5">
-                <!-- <template v-for="game in games">
-                    <GameCard :gameId="game._id" :name="game.name" :mainImage="game.mainImage.secure_url" :overall="game.rating.overall" :genres="game.genres" />
-                </template> -->
                 <GameCard v-for="game in games" :gameId="game._id" :name="game.name" :mainImage="game.mainImage.secure_url" :overall="game.rating.overall" :genres="game.genres"/>
             </div>
         </div>

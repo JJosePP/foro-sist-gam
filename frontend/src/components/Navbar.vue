@@ -27,6 +27,13 @@ const tabs = computed(() => {
         { name: 'quizzes', label: 'RETOS', to: '/quizzes' },
     ]
 
+    if(userStore.isModOrAdmin){
+        baseTabs.push({
+            name: 'reports',
+            label: 'REPORTES',
+            to: '/reports'
+        })
+    }
     if (userStore.isAdmin) {
         baseTabs.push({
             name: 'admin',
@@ -151,7 +158,7 @@ const handleClickUserButton = () => {
         <!-- auth mobile -->
         <Transition name="mobile-menu">
             <div v-show="authGroupIsOpen" class="flex flex-col gap-3 items-center text-base w-full md:hidden">
-                <RouterLink v-if="userStore.token" v-bind:to="{name: 'profile', params: {userId: userStore.userId}}" class="box-content size-[50px] overflow-hidden border border-neon-blue rounded-full bg-green-300"><img class="w-full h-full object-cover " v-bind:src="userStore.profilePic"></RouterLink>
+                <RouterLink v-if="userStore.token" v-bind:to="{name: 'profile', params: {userId: userStore.userId}}" class="box-content size-[50px] overflow-hidden border border-neon-blue rounded-full"><img class="w-full h-full object-cover " v-bind:src="userStore.profilePic"></RouterLink>
                 <RouterLink to="/login" v-if="!userStore.token" class="font-semibold hover:text-neon-blue">Iniciar sesión</RouterLink>
                 <RouterLink to="/register" v-if="!userStore.token" class="bg-neon-blue px-[24px] py-[8px] rounded-md text-dark-base font-bold hover:bg-opacity-80 transition-all transform hover:scale-105">Registrarse</RouterLink>
                 <button v-on:click="logout" v-if="userStore.token">Cerrar sesión</button>
@@ -167,7 +174,7 @@ const handleClickUserButton = () => {
         </Transition> -->
         <!-- auth desktop -->
         <div class="hidden md:flex md:flex-row items-center gap-3 md:text-xs lg:text-base w-full md:w-auto justify-end">
-            <RouterLink v-if="userStore.token" v-bind:to="{name: 'profile', params: {userId: userStore.userId}}" class="box-content size-[50px] overflow-hidden border border-neon-blue rounded-full bg-green-300">
+            <RouterLink v-if="userStore.token" v-bind:to="{name: 'profile', params: {userId: userStore.userId}}" class="box-content size-[50px] overflow-hidden border border-neon-blue rounded-full">
                 <img class="w-full h-full object-cover" v-bind:src="userStore.profilePic"></RouterLink>
             <RouterLink to="/login" v-if="!userStore.token" class="font-semibold hover:text-neon-blue">Iniciar sesión</RouterLink>
             <RouterLink to="/register" v-if="!userStore.token" class="bg-neon-blue px-[24px] py-[8px] rounded-md text-dark-base font-bold hover:bg-opacity-80 transition-all transform hover:scale-105">Registrarse</RouterLink>

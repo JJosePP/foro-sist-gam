@@ -163,7 +163,6 @@
 
         } catch (error) {
             console.log("ERROR: ", error)
-            // errorInSession.value = true //HACER QUE APAREZCA UN ELEMENTO EN EL TEMPLATE CON UN BOTON PARA QUE SE VAYA DE LA VISTA
             timer.value = '15:00'
             clearInterval(intervalId)
             resetSession()

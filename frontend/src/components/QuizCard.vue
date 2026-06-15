@@ -79,7 +79,7 @@
 
             <p class="font-semibold text-xl text-white">{{ title }}</p>
 
-            <p class=" max-h-14  overflow-auto scrollbar font-semibold text-xs text-gray-400">{{ description }}</p>
+            <p class="h-14 overflow-auto scrollbar font-semibold text-xs text-gray-400">{{ description }}</p>
 
             <div class="flex flex-row py-1 justify-center items-center rounded-md border-[1px] border-neon-blue/30 bg-dark-base">
                 <div class="w-12 h-12">
@@ -88,7 +88,7 @@
             </div>
 
             <div v-if="quizIsCompleted || userStore.isAdmin" class="font-bold text-base text-dark-base text-center py-3 rounded-md bg-neon-blue/20">Completada</div>
-            <div v-else-if="userStore.isAdmin" class="font-bold text-base text-dark-base text-center py-3 rounded-md bg-neon-blue/20">Participar</div>
+            <div v-else-if="!userStore.token" class="font-bold text-base text-dark-base text-center py-3 rounded-md bg-neon-blue/20">Participar</div>
             <RouterLink v-else :to="{name: 'quiz', params:{quizId: quizId}}" class="font-bold text-base text-dark-base text-center py-3 rounded-md bg-neon-blue hover:bg-neon-blue/50">Empezar prueba</RouterLink>
         </div>
     </div>

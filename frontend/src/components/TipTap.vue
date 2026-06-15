@@ -101,12 +101,14 @@
 </template>
 
 <style>
-/* 
+
     .tiptap {
         :first-child {
             margin-top: 0;
         }
-    } */
+        display: flex;
+        flex-direction: column;
+    }
     .tiptap:focus {
         outline: 1px solid #00d4ff;
     }

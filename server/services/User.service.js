@@ -2,7 +2,6 @@ import userModel from "../models/User.model.js";
 import {deleteImage, uploadImage} from "../utils/cloudinary.js"
 import fs from 'fs-extra'
 import { apiErrors } from "../utils/apiErrors.js";
-import badgeService from "./Badge.service.js";
 
 const getUser = async (userId, uid) => {
     let user;

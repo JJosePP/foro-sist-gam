@@ -20,7 +20,10 @@ const editProfile = async (req, res, next) => {
         const userId = req.params.userId
         let result = await userService.editProfile(userId,req.uid,req.body, req.files[0]);
 
-        return res.status(200).json({result})
+        return res.status(200).json({
+            msg: 'Perfil modifcado con éxito',
+            editedProfile: result
+        })
     } catch(error){
         next(error)
     }

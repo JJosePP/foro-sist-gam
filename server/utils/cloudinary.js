@@ -48,7 +48,7 @@ export async function uploadImage(filePath, type, game = null, context){
             }
         }
 
-        let folder = 'questgamer/'+ type;
+        let folder = process.env.CLOUDINARY_FOLDER + type;
         if (type === 'games'){
             folder = folder + '/' + game
         };

@@ -14,7 +14,6 @@
     const banningUserIndex = ref(null)
     
     const getUsers = async () => {
-        //tengo que hacer hasta endpoint
         try {
             const {data} = await api({
                 url: 'users',

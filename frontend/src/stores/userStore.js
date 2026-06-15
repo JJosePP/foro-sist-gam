@@ -69,13 +69,6 @@ export const useUserStore = defineStore("user", () => {
             }
         }
     };
-    // const setTime = () => {
-    //     console.log(Date.now())
-    //     console.log(expiresIn.value)
-    //     setTimeout(() => {
-    //         refreshToken();
-    //     }, expiresIn.value * 1000 - 6000);
-    // };
 
     const setTime = () => {
         if(timeoutId){
@@ -133,8 +126,12 @@ export const useUserStore = defineStore("user", () => {
             await api({
                 url: "/logout",
                 method: 'POST',
-                skipAuthRefresh: true
+                skipAuthRefresh: true,
+                headers: {
+                    Authorization: "Bearer " + token.value
+                }
             })
+
         } catch (error) {
             console.log(error);
         } finally {
@@ -152,6 +149,10 @@ export const useUserStore = defineStore("user", () => {
         roles.value = []
     };
 
+    const setProfilePic = (newImg) => {
+        profilePic.value = newImg;
+        localStorage.setItem("profilePic", newImg)
+    }
     // GETTERS (computed)
     const isAdmin = computed(() => roles.value.includes('administrator'))
     const isModOrAdmin = computed(() => roles.value.includes('moderator'))
@@ -168,6 +169,7 @@ export const useUserStore = defineStore("user", () => {
         register,
         setToken,
         isAdmin,
-        isModOrAdmin
+        isModOrAdmin,
+        setProfilePic
     };
 });

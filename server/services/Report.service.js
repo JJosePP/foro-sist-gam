@@ -28,22 +28,25 @@ const deleteReport = async (reportId) => {
 }
 //obtener todos los reportes
 const getReports = async (page) => {
-    const resultsPerPage = 10;
-    let hasNextPage = false;
+    // const resultsPerPage = 10;
+    // let hasNextPage = false;
 
     const fieldsToSelectForPost = "-rating -status -numReplies -negativeVotesList -positiveVotesList -positiveVotes -negativeVotes -isModerated -createdAt -updatedAt";
     const fieldsToSelectForUser = "_id userName profilePic.secure_url"
-    let [result, totalReports] = await Promise.all([
-        reportModel.find()
-            // .populate({path: "post", select: fieldsToSelectForPost, populate: {path: "user", select: fieldsToSelectForUser}})
+    // let [result, totalReports] = await Promise.all([
+    //     reportModel.find()
+    //         // .populate({path: "post", select: fieldsToSelectForPost, populate: {path: "user", select: fieldsToSelectForUser}})
+    //         .populate({path: "user", select: fieldsToSelectForUser})
+    //         .populate({path: "post", select: "kind"})
+    //         .sort({createdAt: 1})
+    //         .skip((page - 1) * resultsPerPage)
+    //         .limit(resultsPerPage + 1),
+    //     reportModel.countDocuments()
+    // ])
+    let result = await reportModel.find()
             .populate({path: "user", select: fieldsToSelectForUser})
             .populate({path: "post", select: "kind"})
             .sort({createdAt: 1})
-            .skip((page - 1) * resultsPerPage)
-            .limit(resultsPerPage + 1),
-        reportModel.countDocuments()
-    ])
-    console.log("LISTA REPORTS: ", result)
     for(let report of result) {
         if(report.post.kind === "Reply"){
             // await report.populate({path: "post", select: fieldsToSelectForPost, populate: {path: "thread", select: "_id title content"}})
@@ -54,17 +57,17 @@ const getReports = async (page) => {
             await report.populate({path: "post", select:fieldsToSelectForPost, populate: {path: "game", select: "_id name"}, populate: {path: "user", select: fieldsToSelectForUser}})
         }
     }
-    if(result.length > resultsPerPage){
-        hasNextPage = true;
-        result.pop()
-    }
+    // if(result.length > resultsPerPage){
+    //     hasNextPage = true;
+    //     result.pop()
+    // }
 
     return {
-        data: result,
-        currentPage: page,
-        hasNextPage,
-        totalPages: Math.ceil(totalReports/resultsPerPage),
-        totalReports
+        reports: result,
+        // currentPage: page,
+        // hasNextPage,
+        // totalPages: Math.ceil(totalReports/resultsPerPage),
+        // totalReports
     }
 }
 //obtener datos un reporte ESTE CREO QUE NO
