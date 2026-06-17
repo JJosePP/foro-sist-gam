@@ -35,7 +35,7 @@ const createSession = async (quizId, uid) => {
 const answerQuestion = async(sesiondId, userAnswer) => {
     const session = await quizSessionModel.findById(sesiondId);
     if(!session){
-        apiErrors.sessionNotFound;
+        throw apiErrors.sessionNotFound;
     }
     if(session.finished){
         throw apiErrors.finishedSession
@@ -79,7 +79,7 @@ const getSession = async (sessionId,uid) => {
     console.log('SESION: ',sessions)
 
     if(!session){
-        apiErrors.sessionNotFound;
+        throw apiErrors.sessionNotFound;
     }
 
     if(Date.now() > session.expiresAt){

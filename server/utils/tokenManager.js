@@ -14,13 +14,21 @@ export const generateToken = (uid, roles) => {
     }
 };
 
+export const createRefreshToken = (uid) => {
+    const expiresIn = 60 * 60 * 24 * 30;
+
+    return jwt.sign({ uid }, process.env.JWT_REFRESH, {
+            expiresIn,
+        });
+}
+
 export const generateRefreshToken = (uid, res) => {
     const expiresIn = 60 * 60 * 24 * 30;
     try {
-        const refreshToken = jwt.sign({ uid }, process.env.JWT_REFRESH, {
-            expiresIn,
-        });
-
+        // const refreshToken = jwt.sign({ uid }, process.env.JWT_REFRESH, {
+        //     expiresIn,
+        // });
+        const refreshToken = createRefreshToken(uid)
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: !(process.env.MODO === "developer"),

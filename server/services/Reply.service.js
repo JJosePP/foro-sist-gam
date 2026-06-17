@@ -62,17 +62,21 @@ const getRepliesByThread = async (threadId, page) => {
 
 const editReply = async (replyId, content, uid) => {
     let reply = await replyModel.findById(replyId);
+    console.log(reply)
+    // console.log('Moderado? ',reply?.isModerated)
+    // console.log('Id usuario reply: ',reply?._id)
+    // console.log('Id usuario conectado: ', uid)
 
     if(!reply){
-        apiErrors.replyNotFound;
+        throw apiErrors.replyNotFound;
     }
     
     if(reply.user.toString() !== uid){
-        apiErrors.unauthorized;
+        throw apiErrors.unauthorized;
     }
 
     if(reply.isModerated){
-        apiErrors.moderatedContent;
+        throw apiErrors.moderatedContent;
     }
 
     reply.content = content;

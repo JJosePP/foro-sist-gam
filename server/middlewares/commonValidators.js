@@ -114,6 +114,7 @@ export const validateOptionalScreenshots = (req,res,next) => {
 }
 
 const validateImage = (req,required) => {
+    const files = req.files || []
     if(req.files?.length > 1){
         throw apiErrors.tooManyImages
     }

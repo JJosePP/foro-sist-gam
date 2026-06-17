@@ -4,6 +4,9 @@ import "dotenv/config"
 async function connectDB(){
     try{
         mongoose.set('debug',true)
+        if(process.env.NODE_ENV === 'test'){
+            mongoose.set('autoIndex',false)
+        }
         await mongoose.connect(process.env.MONGO_URI, /* ,{ autoIndex: false } */{
             serverSelectionTimeoutMS: 10000, // espera hasta 10s para conectar
             socketTimeoutMS: 45000, // tiempo de espera antes de cerrar socket

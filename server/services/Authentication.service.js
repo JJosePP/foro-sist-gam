@@ -116,7 +116,7 @@ const logout = async (tokenId) => {
     return await token.save()
 }
 
-const refreshToken = async (uid) => {
+const refreshToken = async (uid, res) => {
     let user = await userModel.findById(uid)
 
     if(user.authorized === false) {

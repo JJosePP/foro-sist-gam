@@ -9,7 +9,7 @@ const getUser = async (req, res, next) => {
     try {
         const userId = req.params.userId
         let user = await userService.getUser(userId, req.uid)
-        return res.json({ user });
+        return res.status(200).json({ user });
     } catch (error) {
         next(error)
     }

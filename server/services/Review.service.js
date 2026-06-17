@@ -87,8 +87,11 @@ const editReview = async (reviewId, data) => {
         throw apiErrors.reviewNotFound;
     }
 
-    if(review.user.toString() !== data.user || review.isModerated){
+    if(review.user.toString() !== data.user){
         throw apiErrors.unauthorized;
+    }
+    if(review.isModerated){
+        throw apiErrors.moderatedContent;
     }
     let oldRating = {...review.rating}
 
@@ -116,8 +119,11 @@ const deleteReview = async(reviewId, uid) => {
     if(!review){
         throw apiErrors.reviewNotFound
     }
-    if(review.user.toString() !== uid || review.isModerated){
+    if(review.user.toString() !== uid){
         throw apiErrors.unauthorized;
+    }
+    if(review.isModerated){
+        throw apiErrors.moderatedContent;
     }
     await review.deleteOne()
     await gameModel.updateOne(

@@ -181,8 +181,11 @@ const editThread = async(threadId, uid, body) => {
         throw apiErrors.threadNotFound;
     }
 
-    if(thread.user.toString() !== uid || thread.isModerated){
+    if(thread.user.toString() !== uid){
         throw apiErrors.unauthorized;
+    }
+    if(thread.isModerated){
+        throw apiErrors.moderatedContent
     }
     if(thread.status === "Cerrado"){
         throw apiErrors.closedThread

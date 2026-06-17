@@ -7,10 +7,7 @@ export const requireToken = (req, res, next) => {
 
         token = token?.split(" ")[1];
         const payload = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('token')
-        console.log(token)
-        console.log("payload")
-        console.log(payload)
+
         req.uid = payload.uid;
         req.tokenId = payload.tokenId
         req.roles = payload.roles

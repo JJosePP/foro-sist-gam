@@ -39,10 +39,7 @@ const getQuestion = async (req,res,next) =>{
             let questionObject = question.toObject();
 
             let {answer, distractors, ...formatedQuestion} = questionObject;
-            console.log("QuestionObject: ", questionObject)
-            console.log("Answer: ", answer)
-            console.log("distractors: ", distractors)
-            console.log("formatedQuestion: ", formatedQuestion)
+
             let possibleAnswers = [answer, ...distractors];
             shuffle(possibleAnswers)
             formatedQuestion.possibleAnswers = possibleAnswers;

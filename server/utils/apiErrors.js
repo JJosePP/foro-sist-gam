@@ -165,7 +165,7 @@ export const apiErrors = {
         details: "Ya reseñaste este juego"
     },
     reviewNotFound: {
-        status: 400,
+        status: 404,
         title: "Reseña no encontrada",
         details: "La reseña especificada no existe o ha sido eliminada."
     },
@@ -225,7 +225,7 @@ export const apiErrors = {
         details: "La sesión solicitada ha finalizado por tiempo."
     },
     postNotFound: {
-        status: 400,
+        status: 404,
         title: "Publicación no encontrada",
         details: "La publicación solicitada no existe o ha sido eliminada."
     },
@@ -235,7 +235,7 @@ export const apiErrors = {
         details: "La publicación ya ha sido moderada y no puede volver a ser reportada."
     },
     reportNotFound: {
-        status: 400,
+        status: 404,
         title: "Reporte no encontrado",
         details: "El reporte solicitado no existe o ha sido eliminado."
     }

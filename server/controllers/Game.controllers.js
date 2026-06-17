@@ -18,8 +18,6 @@ const unlinkFiles = async (mainImage, screenshots) => {
 const createGame = async (req,res,next) => {
     try {
         req.files = Object.assign({},req.files)
-        console.log("IMAGENSES", req.files)
-
         const game = await gameService.createGame(req.body, req.files);
         let g = await game.populate([
             {path: "genres", select: "id name"},

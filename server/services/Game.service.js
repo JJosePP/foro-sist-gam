@@ -3,6 +3,7 @@ import gameModel from "../models/Game.model.js"
 import platformModel from '../models/Platform.model.js'
 import { deleteImage, uploadImage, deleteImages, deleteFolder } from "../utils/cloudinary.js";
 import { apiErrors } from "../utils/apiErrors.js";
+import mongoose from "mongoose";
 
 const regex_to_remove_white_spaces = /\s* \s*/g;
 const regex_to_remove_special_chars = /[^a-zA-Z0-9\s\+]/g;
@@ -56,7 +57,7 @@ const createGame = async (body, files) => {
 
     } catch (error){
         if(uploadedImages.length > 0){
-            let path = 'questgamer/games/' + game.id
+            let path = process.env.CLOUDINARY_FOLDER + 'games/' + game.id
             await deleteImages(path)
             await deleteFolder(path)
         }
@@ -106,8 +107,12 @@ const editGame = async (gameId, body, files) => {
 
         if(files.screenshots){
             let numSavedScreenshots = game.screenshots.length
+            console.log('GUARDADAS: ', numSavedScreenshots)
             let numScreenshots = files.screenshots.length
+            console.log('SUBIENDO: ', numScreenshots)
+
             let totalScreenshots = numSavedScreenshots + numScreenshots
+            console.log('TOTALES: ', totalScreenshots)
 
             if(totalScreenshots > 10){
                 let err = apiErrors.tooManyScreenshots
@@ -145,7 +150,8 @@ const deleteScreenshot = async (gameId, imageId) => {
         throw apiErrors.gameNotFound
     };
 
-    let publicId = 'questgamer/games/' + game.id + '/' + imageId;
+    // let publicId = 'questgamer/games/' + game.id + '/' + imageId;
+    let publicId = process.env.CLOUDINARY_FOLDER + 'games/' + game.id + '/' + imageId;
     const allowedPublicIds = game.screenshots.map(i => i.public_id);
 
     if(allowedPublicIds.includes(publicId)){
@@ -162,7 +168,7 @@ const deleteGame = async (gameId) => {
         throw apiErrors.gameNotFound
     }
 
-    let path = 'questgamer/games/' + game.id
+    let path = process.env.CLOUDINARY_FOLDER + 'games/' + game.id
     await deleteImages(path)
     await deleteFolder(path)
 
@@ -185,6 +191,13 @@ const createPipeline = (search) => {
     return pipeline
 }
 
+const toObjectIdArray = (value) => {
+  if (!value) return undefined;
+
+  return (Array.isArray(value) ? value : [value])
+    .map(v => new mongoose.Types.ObjectId(v));
+};
+
 const getGames = async (resultsPerPage, page, genres, platforms, sort, search) => {
     let result;
     let totalItems;
@@ -193,14 +206,13 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
     const filter = {}
 
     if(genres) {
-        console.log("GENEROS: ", genres)
         // const genreDocs = await genreModel.find(
         //     {normalizedName: {$in: genres}},
         //     {_id:1}
         // );
         // const genreIds = genreDocs.map(g=>g._id);
         // filter.genres = {$all: genreIds};
-        filter.genres = {$all: genres};
+        filter.genres = {$all: toObjectIdArray(genres)};
 
     }
 
@@ -211,7 +223,7 @@ const getGames = async (resultsPerPage, page, genres, platforms, sort, search) =
         // );
         // const platformIds = platformDocs.map(p => p._id);
         // filter.platforms = {$in: platformIds};
-        filter.platforms = {$in: platforms};
+        filter.platforms = {$in: toObjectIdArray(platforms)};
     }
     if(search){
         const pipeline = createPipeline(search)

@@ -134,6 +134,7 @@ const deleteQuestion = async (questionId) => {
 
 const isCorrectAnswer = async (questionId, answer) => {
     let question = await questionModel.findById(questionId);
+    console.log('PREGUNTA: ', question)
     console.log(question.answer === answer)
     if(question.answer === answer){
         return true

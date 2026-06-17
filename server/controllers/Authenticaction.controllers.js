@@ -34,10 +34,10 @@ const login = async (req, res, next) => {
 
 const refreshToken = async (req, res, next) => {
         try {
-            let user = await authenticationService.refreshToken(req.uid)
+            let user = await authenticationService.refreshToken(req.uid, res)
             const { token, expiresIn } = generateToken(req.uid, user.roles);
 
-            return res.json({ token, expiresIn });
+            return res.status(200).json({ token, expiresIn });
         } catch (error) {
             next(error)
         }

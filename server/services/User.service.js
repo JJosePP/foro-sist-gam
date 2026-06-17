@@ -49,7 +49,6 @@ const editProfile = async (userId, uid, body, file) => {
 
     if(existingUsers.length === 0){
         await user.validate()
-
         if(file){
             await changeProfilePic(user, file)
         }
@@ -81,12 +80,17 @@ const editProfile = async (userId, uid, body, file) => {
         error.name  = "ValidationError"
         error.errors = {}
         if(existingUsers[0].id === user.id){
-            error.errors.email = {message: "El correo electrónico ya está registrado"}
-        }else{
+            // error.errors.email = {message: "El correo electrónico ya está registrado"}
             error.errors.userName = {message: "El nombre de usuario ya está en uso"}
+
+        }else{
+            error.errors.email = {message: "El correo electrónico ya está registrado"}
+            // error.errors.userName = {message: "El nombre de usuario ya está en uso"}
             
             if(existingUsers[1].id !== user.id){
-                error.errors.email = {message: "El correo electrónico ya está registrado"}
+                // error.errors.email = {message: "El correo electrónico ya está registrado"}
+                error.errors.userName = {message: "El nombre de usuario ya está en uso"}
+
             }
         }
         throw error
