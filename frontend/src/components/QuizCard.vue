@@ -63,7 +63,7 @@
             <!-- tags + time/questions -->
             <div class="flex flex-row gap-1">
                 <ul class="flex flex-row gap-2 w-2/3 flex-wrap max-h-14 overflow-auto scrollbar">
-                    <li v-for="tag in tags" class="px-1 py-0.5 rounded-md font-semibold text-sm text-gray-400 border-[1px] border-neon-blue bg-neon-blue/20">{{ tag.name }}</li>
+                    <li v-for="tag in tags" class="px-1 py-0.5 h-fit rounded-md font-semibold text-sm text-gray-400 border-[1px] border-neon-blue bg-neon-blue/20">{{ tag.name }}</li>
                 </ul>
                 <div class="flex flex-col gap-2 font-semibold text-sm text-gray-400">
                     <div class="flex flex-row gap-1 items-center">

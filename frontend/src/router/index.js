@@ -19,10 +19,6 @@ const routes = [
         children: [
             { path: "", component: HomeView },
             {
-                path: "about",
-                component: () => import("../views/AboutView.vue"),
-            },
-            {
                 path: "login",
                 component: () => import("../views/loginView.vue"),
                 name: "Login"
@@ -34,13 +30,6 @@ const routes = [
             {
                 path: "logout",
                 component: HomeView,
-            },
-            {
-                path: "protected",
-                component: () => import("../views/ProtectedPage.vue"),
-                meta: {
-                    auth: true,
-                },
             },
             {
                 path: "users/:userId",

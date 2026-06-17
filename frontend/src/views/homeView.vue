@@ -54,15 +54,7 @@
 </script>
 <!-- HACER SKELETON -->
 <template>
-      <RouterLink
-            :to="{
-                name: 'gameInfo',
-                params: { gameId: '6995f5b837b319017d460776' },
-                hash: '#r-69b036ebf2f7da108f0a5158'
-            }"
-        >
-        Ver reseñas
-    </RouterLink>
+
   <div v-if="isLoading" class="flex flex-col max-w-[80%] mx-auto gap-5 md:gap-10 animate-pulse">
       <!-- Banner bienvenida -->
       <div class="flex flex-col gap-2 p-8 rounded-2xl bg-gradient-to-br from-neon-purple/20 to-neon-blue/20">
