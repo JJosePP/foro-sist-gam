@@ -1,4 +1,6 @@
 .env
+config/dev.env
+config/test.env
 dataToPopulate.js
 ServiceToPopulate.js
 RoutesToPopulate.js
